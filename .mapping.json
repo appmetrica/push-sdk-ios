@@ -145,5 +145,6 @@
   "CONTRIBUTING.md":"mobile/metrika/ios/push-sdk/public/CONTRIBUTING.md",
   "LICENSE":"mobile/metrika/ios/push-sdk/public/LICENSE",
   "Package.resolved":"mobile/metrika/ios/push-sdk/public/Package.resolved",
-  "Package.swift":"mobile/metrika/ios/push-sdk/public/Package.swift"
+  "Package.swift":"mobile/metrika/ios/push-sdk/public/Package.swift",
+  "README.MD":"mobile/metrika/ios/push-sdk/public/README.MD"
 }
