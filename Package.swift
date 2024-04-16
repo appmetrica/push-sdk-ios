@@ -17,7 +17,7 @@ enum PushProduct: String, CaseIterable {
     var targets: [PushTarget] {
         switch self {
         case .push: return [.push]
-        case .pushLazy: return [.push, .lazy]
+        case .pushLazy: return [.lazy]
         }
     }
 
