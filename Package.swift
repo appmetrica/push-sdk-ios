@@ -125,8 +125,7 @@ let package = Package(
     targets: [
         .target(
             target: .push,
-            externalDependencies: [.appMetrica],
-            includePrivacyManifest: false
+            externalDependencies: [.appMetrica]
         ),
         .testTarget(
             target: .push,
@@ -141,8 +140,7 @@ let package = Package(
             searchPaths: [
                 "../../AppMetricaPush/Sources",
                 "../../AppMetricaPush/Sources/Lazy",
-            ],
-            includePrivacyManifest: false
+            ]
         ),
         .testTarget(
             target: .lazy,

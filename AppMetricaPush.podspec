@@ -14,9 +14,11 @@ Pod::Spec.new do |s|
 
   s.header_dir = s.name
   s.source_files = [
-    'AppMetricaPush/Sources/**/*',
+    'AppMetricaPush/Sources/**/*.{h,m,c}',
   ]
   s.public_header_files = 'AppMetricaPush/Sources/include/**/*.h'
+  
+  s.resource_bundles = { s.name => "#{s.name}/Sources/Resources/PrivacyInfo.xcprivacy" }
 
   s.dependency 'AppMetricaCore', '~> 5.2'
   s.dependency 'AppMetricaCoreExtension', '~> 5.2'
