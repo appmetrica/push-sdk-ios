@@ -1,6 +1,8 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreLocation/CoreLocation.h>
+#import <UserNotifications/UserNotifications.h>
+
 #import "AMPLazyPushProcessor.h"
 #import "AMPLocationProvider.h"
 #import "AMPPushNotificationController.h"
@@ -9,8 +11,11 @@
 #import "AMPLazyNetworkHelper.h"
 #import "AMPLazyNotificationContentMerger.h"
 #import "AMPLazyPayloadDefaultsHelper.h"
-#import <UserNotifications/UserNotifications.h>
 #import "AMPLazyPushProvider.h"
+#import "AMPLibraryAnalyticsTracker.h"
+
+
+static NSString *const kAMPNotificationIDKey = @"notification_id";
 
 @interface AMPLazyPushProcessor ()
 
@@ -65,6 +70,11 @@
     }
     AMPLazyPayload *lazyPayload = payload.lazy;
     if (lazyPayload != nil) {
+        [[AMPLibraryAnalyticsTracker sharedInstance] reportEventWithName:@"Lazy push received" 
+                                                              parameters:@{
+            kAMPNotificationIDKey: payload.notificationID ?: @""
+        }];
+        
         CLLocation *location = [self.locationProvider locationWithMinRecency:[AMPLazyPayloadDefaultsHelper minRecency:lazyPayload]
                                                                  minAccurary:[AMPLazyPayloadDefaultsHelper minAccuracy:lazyPayload]];
         if (location == nil) {
