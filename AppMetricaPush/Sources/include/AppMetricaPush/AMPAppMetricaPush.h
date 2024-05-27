@@ -141,7 +141,7 @@ NS_SWIFT_NAME(AppMetricaPush)
 /** Disables events cache that is used in extensions to track notifications receive.
 
  After calling this method other methods will require AppMetrica activation:
- + [AMPPushMetricaPush handleDidReceiveNotificationRequest:]
+ + [AMPAppMetricaPush handleDidReceiveNotificationRequest:]
  */
 + (void)disableEventsCaching;
 
