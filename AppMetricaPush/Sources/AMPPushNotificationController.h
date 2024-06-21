@@ -16,6 +16,7 @@
 @class AMPTrackingDeduplicationController;
 @class UNNotificationContent;
 @class UISceneConnectionOptions;
+@class AMPPendingNotificationStrategy;
 
 @interface AMPPushNotificationController : NSObject
 
@@ -27,7 +28,8 @@
                    eventsController:(AMPEventsController *)eventsController
             libraryAnalyticsTracker:(AMPLibraryAnalyticsTracker *)libraryAnalyticsTracker
               pendingPushController:(AMPPendingPushController *)pendingPushController
-            deduplicationController:(AMPTrackingDeduplicationController *)deduplicationController;
+            deduplicationController:(AMPTrackingDeduplicationController *)deduplicationController
+              pendingNotifyStrategy:(AMPPendingNotificationStrategy*)pendingNotifyStrategy;
 
 - (void)setDeviceTokenFromData:(NSData *)data pushEnvironment:(AMPAppMetricaPushEnvironment)pushEnvironment;
 - (void)handleApplicationDidFinishLaunchingWithOptions:(NSDictionary *)launchOptions;

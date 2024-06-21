@@ -17,11 +17,15 @@
 #import "AMPPendingPush.h"
 #import "AMPTrackingDeduplicationController.h"
 #import "AMPLazyPushProvider.h"
+#import "AMPPendingNotificationStrategy.h"
 
 #import <UIKit/UIKit.h>
 #import <UserNotifications/UserNotifications.h>
 
-@interface AMPPushNotificationController () <AMPPendingPushControllerDelegate, AMPApplicationStateProviderDelegate>
+#import <AppMetricaCoreUtils/AppMetricaCoreUtils.h>
+#import <AppMetricaPlatform/AppMetricaPlatform.h>
+
+@interface AMPPushNotificationController () <AMPPendingPushControllerDelegate, AMPApplicationStateProviderDelegate, AMPPendingNotificationStrategyDelegate>
 
 @property (nonatomic, strong, readonly) AMPDeviceTokenParser *tokenParser;
 
@@ -34,6 +38,8 @@
 @property (nonatomic, strong, readonly) AMPLibraryAnalyticsTracker *libraryAnalyticsTracker;
 @property (nonatomic, strong, readonly) AMPPendingPushController *pendingPushController;
 @property (nonatomic, strong, readonly) AMPTrackingDeduplicationController *deduplicationController;
+
+@property (nonatomic, strong, readonly) AMPPendingNotificationStrategy *pendingNotifyStrategy;
 
 @property (nonatomic, assign) BOOL eventsCaching;
 
@@ -49,6 +55,14 @@
     AMPApplicationStateProvider *applicationStateProvider = [[AMPApplicationStateProvider alloc] init];
     applicationStateProvider.delegate = self;
     
+    // no sense using timer in extension, extension code only stores delivery data
+    AMPPendingNotificationStrategy *strategy = nil;
+    if ([AMAPlatformDescription isExtension] == NO) {
+        AMACancelableDelayedExecutor *strategyExecutor = [[AMACancelableDelayedExecutor alloc] initWithIdentifier:self];
+        strategy = [[AMPPendingNotificationStrategy alloc] initWithExecutor:strategyExecutor];
+        strategy.delegate = self;
+    }
+    
     return [self initWithTokenParser:[[AMPDeviceTokenParser alloc] init]
                        payloadParser:[[AMPPushNotificationPayloadParser alloc] init]
                     payloadValidator:[[AMPPushNotificationPayloadValidator alloc] init]
@@ -57,7 +71,8 @@
                     eventsController:[AMPEventsController sharedInstance]
              libraryAnalyticsTracker:[AMPLibraryAnalyticsTracker sharedInstance]
                pendingPushController:pendingPushController
-             deduplicationController:[[AMPTrackingDeduplicationController alloc] init]];
+             deduplicationController:[[AMPTrackingDeduplicationController alloc] init]
+               pendingNotifyStrategy:strategy];
 }
 
 - (instancetype)initWithTokenParser:(AMPDeviceTokenParser *)tokenParser
@@ -69,6 +84,7 @@
             libraryAnalyticsTracker:(AMPLibraryAnalyticsTracker *)libraryAnalyticsTracker
               pendingPushController:(AMPPendingPushController *)pendingPushController
             deduplicationController:(AMPTrackingDeduplicationController *)deduplicationController
+              pendingNotifyStrategy:(AMPPendingNotificationStrategy*)pendingNotifyStrategy
 {
     self = [super init];
     if (self != nil) {
@@ -82,6 +98,7 @@
         _libraryAnalyticsTracker = libraryAnalyticsTracker;
         _pendingPushController = pendingPushController;
         _deduplicationController = deduplicationController;
+        _pendingNotifyStrategy = pendingNotifyStrategy;
 
         _eventsCaching = YES;
     }
@@ -129,6 +146,7 @@
 - (void)handleDidReceiveNotificationWithNotificationID:(NSString *)notificationID
 {
     if (self.eventsCaching) {
+        [self.pendingNotifyStrategy handlePushNotification];
         [self.pendingPushController handlePendingPushReceivingWithNotificationID:notificationID];
     }
     else {
@@ -316,6 +334,15 @@
     if (state == AMPApplicationStateForeground) {
         [self notifyAboutPendingPushes];
     }
+}
+
+#pragma mark - AMPPendingNotifyStrategyDelegate
+
+- (void)pendingNotificationStrategyDidRequestPush:(AMPPendingNotificationStrategy *)strategy
+{
+    // this method is called only in app. No need to check for application
+    // self.strategy is nil if it is extension
+    [self notifyAboutPendingPushes];
 }
 
 @end

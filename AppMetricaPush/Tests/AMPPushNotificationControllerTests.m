@@ -17,6 +17,7 @@
 #import "AMPPendingPushController.h"
 #import "AMPPendingPush.h"
 #import "AMPTrackingDeduplicationController.h"
+#import "AMPPendingNotificationStrategy.h"
 
 @interface AMPPushNotificationController () <AMPPendingPushControllerDelegate, AMPApplicationStateProviderDelegate>
 
@@ -36,6 +37,7 @@ describe(@"AMPPushNotificationController", ^{
     AMPTargetURLHandler *__block targetURLHandler = nil;
     AMPPendingPushController *__block pendingPushController = nil;
     AMPTrackingDeduplicationController *__block deduplicationController = nil;
+    AMPPendingNotificationStrategy *__block notifyStrategy = nil;
 
     AMPEventsController *__block eventsController = nil;
     AMPLibraryAnalyticsTracker *__block libraryTracker = nil;
@@ -51,8 +53,10 @@ describe(@"AMPPushNotificationController", ^{
         eventsController = [AMPEventsController nullMock];
         pendingPushController = [AMPPendingPushController nullMock];
         deduplicationController = [AMPTrackingDeduplicationController nullMock];
+        notifyStrategy = [AMPPendingNotificationStrategy nullMock];
         [deduplicationController stub:@selector(shouldReportEventForNotification:)
                             andReturn:theValue(YES)];
+        [notifyStrategy stub:@selector(handlePushNotification)];
 
         notificationsController = [[AMPPushNotificationController alloc] initWithTokenParser:tokenParser
                                                                                payloadParser:payloadParser
@@ -62,7 +66,8 @@ describe(@"AMPPushNotificationController", ^{
                                                                             eventsController:eventsController
                                                                      libraryAnalyticsTracker:libraryTracker
                                                                        pendingPushController:pendingPushController
-                                                                     deduplicationController:deduplicationController];
+                                                                     deduplicationController:deduplicationController
+                                                                       pendingNotifyStrategy:notifyStrategy];
     });
 
     context(@"Device Token", ^{
@@ -477,6 +482,10 @@ describe(@"AMPPushNotificationController", ^{
                                                   withArguments:notificationID];
                         [notificationsController handleDidReceiveNotificationWithNotificationID:notificationID];
                     });
+                    it(@"Should call strategy", ^{
+                        [[notifyStrategy should] receive:@selector(handlePushNotification)];
+                        [notificationsController handleDidReceiveNotificationWithNotificationID:notificationID];
+                    });
                 });
             });
 
@@ -673,6 +682,24 @@ describe(@"AMPPushNotificationController", ^{
                                  withArguments:notificationID, kAMPEventsControllerActionTypeShown, nil, kw_any()];
             [notificationsController pendingPushController:pendingPushController didNotifyPendingPush:pendingPush];
         });
+    });
+    
+    context(@"Notify strategy when receive new notification", ^{
+        
+        id<AMPPendingNotificationStrategyDelegate> (^nc)() = ^{ return (id<AMPPendingNotificationStrategyDelegate>)notificationsController; };
+        
+        context(@"in app", ^{
+            beforeEach(^{
+                [applicationStateProvider stub:@selector(isRunningInExtension) andReturn:theValue(NO)];
+            });
+            
+            it(@"should not call notify about pending push", ^{
+                [[pendingPushController should] receive:@selector(notifyAboutPendingPushes)];
+                [nc() pendingNotificationStrategyDidRequestPush:notifyStrategy];
+            });
+            
+        });
+        
     });
 
 });

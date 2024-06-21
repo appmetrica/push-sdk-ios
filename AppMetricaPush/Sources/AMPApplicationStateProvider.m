@@ -2,6 +2,8 @@
 #import "AMPApplicationStateProvider.h"
 #import "AMPApplication.h"
 
+#import <AppMetricaPlatform/AppMetricaPlatform.h>
+
 @interface AMPApplicationStateProvider ()
 
 @property (nonatomic, strong) NSNotificationCenter *notificationCenter;
@@ -64,7 +66,7 @@
 
 - (void)subscribeOnApplicationStateChanges
 {
-    if ([[self class] isExtension]) {
+    if ([AMAPlatformDescription isExtension]) {
         return;
     }
     [self.notificationCenter addObserver:self
@@ -80,11 +82,6 @@
 - (void)unsubscribeFromApplicationStateChanges
 {
     [self.notificationCenter removeObserver:self];
-}
-
-+ (BOOL)isExtension
-{
-    return [[NSBundle mainBundle].executablePath rangeOfString:@".appex"].location != NSNotFound;
 }
 
 - (void)applicationDidBecomeActive
