@@ -1,6 +1,9 @@
 {
   ".gitignore":"mobile/metrika/ios/push-sdk/public/.gitignore",
   ".swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata":"mobile/metrika/ios/push-sdk/public/.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata",
+  ".swiftpm/xcode/xcshareddata/xcschemes/AppMetricaPush-Package.xcscheme":"mobile/metrika/ios/push-sdk/public/.swiftpm/xcode/xcshareddata/xcschemes/AppMetricaPush-Package.xcscheme",
+  ".swiftpm/xcode/xcshareddata/xcschemes/AppMetricaPush.xcscheme":"mobile/metrika/ios/push-sdk/public/.swiftpm/xcode/xcshareddata/xcschemes/AppMetricaPush.xcscheme",
+  ".swiftpm/xcode/xcshareddata/xcschemes/AppMetricaPushLazy.xcscheme":"mobile/metrika/ios/push-sdk/public/.swiftpm/xcode/xcshareddata/xcschemes/AppMetricaPushLazy.xcscheme",
   "AppMetricaPush.podspec":"mobile/metrika/ios/push-sdk/public/AppMetricaPush.podspec",
   "AppMetricaPush/Sources/AMPAppMetricaPush.m":"mobile/metrika/ios/push-sdk/public/AppMetricaPush/Sources/AMPAppMetricaPush.m",
   "AppMetricaPush/Sources/AMPApplication.h":"mobile/metrika/ios/push-sdk/public/AppMetricaPush/Sources/AMPApplication.h",

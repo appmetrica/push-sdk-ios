@@ -1,6 +1,6 @@
 
+#import <AppMetricaCoreUtils/AppMetricaCoreUtils.h>
 #import "AMPPushNotificationPayloadParser.h"
-
 #import "AMPPushNotificationPayload.h"
 #import "AMPAttachmentPayload.h"
 #import "AMPLazyPayload.h"
@@ -29,6 +29,15 @@
     if ([apsDictionary isKindOfClass:[NSDictionary class]]) {
         silent = [apsDictionary[@"content-available"] isEqual:@1];
     }
+    
+    NSArray<NSString *> *delCollapseIDs = domainDictionary[@"del-collapse-ids"];
+    if ([delCollapseIDs isKindOfClass:[NSArray class]] == NO) {
+        delCollapseIDs = @[];
+    }
+    NSArray<NSString *> *validCollapseIds = [AMACollectionUtilities filteredArray:delCollapseIDs
+                                                                    withPredicate:^BOOL(id delCollapseId) {
+        return (delCollapseId != nil) && [delCollapseId isKindOfClass:[NSString class]];
+    }];
 
     AMPLazyPayload *lazyPayload = [self lazyPayloadForDict:domainDictionary[@"g"]];
 
@@ -38,6 +47,7 @@
                                                           userData:userData
                                                        attachments:attachments
                                                             silent:silent
+                                                    delCollapseIDs:validCollapseIds
                                                               lazy:lazyPayload];
     return parsedPayload;
 }

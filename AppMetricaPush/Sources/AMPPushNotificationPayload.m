@@ -9,6 +9,7 @@
                               userData:(NSString *)userData
                            attachments:(NSArray<AMPAttachmentPayload *> *)attachments
                                 silent:(BOOL)silent
+                        delCollapseIDs:(NSArray<NSString *> *)delCollapseIDs
                                   lazy:(AMPLazyPayload *)lazy
 {
     self = [super init];
@@ -18,6 +19,7 @@
         _userData = [userData copy];
         _attachments = [attachments copy];
         _silent = silent;
+        _delCollapseIDs = [delCollapseIDs copy];
         _lazy = lazy;
     }
     return self;

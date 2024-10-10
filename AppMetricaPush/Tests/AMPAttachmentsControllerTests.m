@@ -20,6 +20,7 @@ describe(@"AMPAttachmentsController", ^{
                                                                                                   userData:nil
                                                                                                attachments:attachments
                                                                                                     silent:NO
+                                                                                            delCollapseIDs:@[]
                                                                                                       lazy:nil];
     NSDictionary *const userInfo = @{ @"foo": @"bar" };
 

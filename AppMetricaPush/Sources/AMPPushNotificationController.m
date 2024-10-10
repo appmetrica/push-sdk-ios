@@ -40,6 +40,7 @@
 @property (nonatomic, strong, readonly) AMPTrackingDeduplicationController *deduplicationController;
 
 @property (nonatomic, strong, readonly) AMPPendingNotificationStrategy *pendingNotifyStrategy;
+@property (nonatomic, strong, readonly) UNUserNotificationCenter *notificationCenter;
 
 @property (nonatomic, assign) BOOL eventsCaching;
 
@@ -72,7 +73,8 @@
              libraryAnalyticsTracker:[AMPLibraryAnalyticsTracker sharedInstance]
                pendingPushController:pendingPushController
              deduplicationController:[[AMPTrackingDeduplicationController alloc] init]
-               pendingNotifyStrategy:strategy];
+               pendingNotifyStrategy:strategy
+                  notificationCenter:[UNUserNotificationCenter currentNotificationCenter]];
 }
 
 - (instancetype)initWithTokenParser:(AMPDeviceTokenParser *)tokenParser
@@ -84,7 +86,8 @@
             libraryAnalyticsTracker:(AMPLibraryAnalyticsTracker *)libraryAnalyticsTracker
               pendingPushController:(AMPPendingPushController *)pendingPushController
             deduplicationController:(AMPTrackingDeduplicationController *)deduplicationController
-              pendingNotifyStrategy:(AMPPendingNotificationStrategy*)pendingNotifyStrategy
+              pendingNotifyStrategy:(AMPPendingNotificationStrategy *)pendingNotifyStrategy
+                 notificationCenter:(UNUserNotificationCenter *)notificationCenter
 {
     self = [super init];
     if (self != nil) {
@@ -99,6 +102,7 @@
         _pendingPushController = pendingPushController;
         _deduplicationController = deduplicationController;
         _pendingNotifyStrategy = pendingNotifyStrategy;
+        _notificationCenter = notificationCenter;
 
         _eventsCaching = YES;
     }
@@ -194,6 +198,7 @@
             [self trackPushNotificationShownWithPayload:payload];
         }
         [self trackPushNotificationWithPayload:payload actionType:actionType actionID:nil];
+        [self removeNotificationsIfNeeded:payload];
     }
     if ([self.payloadValidator isPayloadValidForURLOpening:payload]) {
         [self openPushNotificationTargetURL:payload.targetURL applicationState:applicationState];
@@ -307,6 +312,35 @@
 - (void)notifyAboutPendingPushes
 {
     [self.pendingPushController notifyAboutPendingPushes];
+}
+
+- (void)removeNotificationsIfNeeded:(AMPPushNotificationPayload *)payload
+{
+    if (payload.silent == NO) {
+        return;
+    }
+    if (payload.delCollapseIDs.count == 0) {
+        return;
+    }
+    
+    [self.notificationCenter getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> * _Nonnull notifications) {
+        NSMutableArray<NSString *> *delIds = [NSMutableArray array];
+        for (UNNotification *notification in notifications) {
+            if ([payload.delCollapseIDs containsObject:notification.request.identifier]) {
+                [delIds addObject:notification.request.identifier];
+                [self trackPushNotificationRemovedIfNeeded:notification];
+            }
+        }
+        [self.notificationCenter removeDeliveredNotificationsWithIdentifiers:delIds];
+    }];
+}
+
+- (void)trackPushNotificationRemovedIfNeeded:(UNNotification *)notification
+{
+    AMPPushNotificationPayload *delivered = [self parsedPayloadForUserInfo:notification.request.content.userInfo];
+    if (delivered.notificationID != nil) {
+        [self trackPushNotificationWithPayload:delivered actionType:kAMPEventsControllerActionTypeRemoved actionID:nil];
+    }
 }
 
 + (instancetype)sharedInstance

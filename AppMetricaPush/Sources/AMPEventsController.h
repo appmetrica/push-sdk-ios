@@ -9,6 +9,7 @@ extern NSString *const kAMPEventsControllerActionTypeCustom;
 extern NSString *const kAMPEventsControllerActionTypeProcessed;
 extern NSString *const kAMPEventsControllerActionTypeShown;
 extern NSString *const kAMPEventsControllerActionTypeIgnored;
+extern NSString *const kAMPEventsControllerActionTypeRemoved;
 
 @class AMPEventsReporter;
 @class AMPEnvironmentProvider;

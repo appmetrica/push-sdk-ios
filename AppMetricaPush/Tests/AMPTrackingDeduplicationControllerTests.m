@@ -24,6 +24,7 @@ describe(@"AMPTrackingDeduplicationController", ^{
                                                                         userData:nil
                                                                      attachments:nil
                                                                           silent:NO
+                                                                  delCollapseIDs:@[]
                                                                             lazy:nil];
         });
         it(@"Should retrurn YES for firstly met push", ^{
@@ -42,6 +43,7 @@ describe(@"AMPTrackingDeduplicationController", ^{
                                                                         userData:@"USER_DATA"
                                                                      attachments:@[ [AMPAttachmentPayload nullMock] ]
                                                                           silent:YES
+                                                                  delCollapseIDs:@[]
                                                                             lazy:nil];
             [[theValue([controller shouldReportEventForNotification:payload]) should] beNo];
         });
@@ -53,6 +55,7 @@ describe(@"AMPTrackingDeduplicationController", ^{
                                                                         userData:nil
                                                                      attachments:nil
                                                                           silent:NO
+                                                                  delCollapseIDs:@[]
                                                                             lazy:nil];
             [[theValue([controller shouldReportEventForNotification:payload]) should] beYes];
         });
@@ -65,6 +68,7 @@ describe(@"AMPTrackingDeduplicationController", ^{
                                                                         userData:nil
                                                                      attachments:nil
                                                                           silent:NO
+                                                                  delCollapseIDs:@[]
                                                                             lazy:nil];
         });
         it(@"Should retrurn YES for firstly met push", ^{
@@ -83,6 +87,7 @@ describe(@"AMPTrackingDeduplicationController", ^{
                                                                         userData:nil
                                                                      attachments:nil
                                                                           silent:NO
+                                                                  delCollapseIDs:@[]
                                                                             lazy:nil];
             [[theValue([controller shouldReportEventForNotification:payload]) should] beYes];
         });
@@ -108,6 +113,7 @@ describe(@"AMPTrackingDeduplicationController", ^{
                                                                         userData:nil
                                                                      attachments:nil
                                                                           silent:NO
+                                                                  delCollapseIDs:@[]
                                                                             lazy:nil];
             [[theValue([controller shouldReportEventForNotification:payload]) should] beYes];
         });

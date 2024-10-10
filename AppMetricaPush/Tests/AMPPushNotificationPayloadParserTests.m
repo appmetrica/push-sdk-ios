@@ -1,6 +1,5 @@
 
 #import <Kiwi/Kiwi.h>
-
 #import "AMPPushNotificationPayloadParser.h"
 #import "AMPPushNotificationPayload.h"
 #import "AMPAttachmentPayload.h"
@@ -84,7 +83,15 @@ describe(@"AMPPushNotificationPayloadParser", ^{
                         @"c": lazyMinRecency,
                         @"d": lazyMinAccuracy
                     }
-                }
+                },
+                @"del-collapse-ids": @[
+                    @"collapse-id-1",
+                    @"collapse-id-2",
+                    @YES,
+                    @99,
+                    @[],
+                    [NSNull null],
+                ],
             }
         };
 
@@ -104,6 +111,23 @@ describe(@"AMPPushNotificationPayloadParser", ^{
             AMPPushNotificationPayload *payload =
                 [parser pushNotificationPayloadFromDictionary:payloadDictionary];
             [[payload.userData should] equal:userData];
+        });
+        
+        it(@"Should parse valid del collapse ids", ^{
+            AMPPushNotificationPayload *payload =
+                [parser pushNotificationPayloadFromDictionary:payloadDictionary];
+            [[payload.delCollapseIDs should] equal:@[
+                @"collapse-id-1",
+                @"collapse-id-2",
+            ]];
+        });
+        
+        it(@"Should not parse invalid del collapse ids", ^{
+            NSMutableDictionary *newPayloadDict = [[NSMutableDictionary alloc] initWithDictionary:payloadDictionary];
+            [newPayloadDict setDictionary:@{@"yamp" : @{@"del-collapse-ids" : @"collapse-id"}}];
+            AMPPushNotificationPayload *payload =
+                [parser pushNotificationPayloadFromDictionary:newPayloadDict];
+            [[payload.delCollapseIDs should] equal:@[]];
         });
 
         context(@"Attachment", ^{

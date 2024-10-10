@@ -38,6 +38,7 @@ describe(@"AMPPushNotificationController", ^{
     AMPPendingPushController *__block pendingPushController = nil;
     AMPTrackingDeduplicationController *__block deduplicationController = nil;
     AMPPendingNotificationStrategy *__block notifyStrategy = nil;
+    UNUserNotificationCenter *__block notificationCenter = nil;
 
     AMPEventsController *__block eventsController = nil;
     AMPLibraryAnalyticsTracker *__block libraryTracker = nil;
@@ -57,6 +58,7 @@ describe(@"AMPPushNotificationController", ^{
         [deduplicationController stub:@selector(shouldReportEventForNotification:)
                             andReturn:theValue(YES)];
         [notifyStrategy stub:@selector(handlePushNotification)];
+        notificationCenter = [UNUserNotificationCenter nullMock];
 
         notificationsController = [[AMPPushNotificationController alloc] initWithTokenParser:tokenParser
                                                                                payloadParser:payloadParser
@@ -67,7 +69,8 @@ describe(@"AMPPushNotificationController", ^{
                                                                      libraryAnalyticsTracker:libraryTracker
                                                                        pendingPushController:pendingPushController
                                                                      deduplicationController:deduplicationController
-                                                                       pendingNotifyStrategy:notifyStrategy];
+                                                                       pendingNotifyStrategy:notifyStrategy
+                                                                          notificationCenter:notificationCenter];
     });
 
     context(@"Device Token", ^{
@@ -118,6 +121,101 @@ describe(@"AMPPushNotificationController", ^{
             [payloadValidator stub:@selector(isPayloadValidForTracking:) andReturn:theValue(NO)];
             [[eventsController shouldNot] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)];
             [notificationsController handlePushNotification:@{}];
+        });
+        
+        context(@"Del collapse ids", ^{
+            NSArray *__block delIds = nil;
+            UNNotification *__block notification = nil;
+            UNNotificationRequest *__block request = nil;
+            NSString *const identifier = @"collapse-id-2";
+            NSString *const notificationID = @"notificationID";
+            AMPPushNotificationPayload *__block payload = nil;
+            UNNotificationContent *__block content = nil;
+            beforeEach(^{
+                delIds = @[@"collapse-id-1",
+                           identifier];
+                
+                payload = [[AMPPushNotificationPayload alloc] initWithNotificationID:notificationID
+                                                                           targetURL:@""
+                                                                            userData:@""
+                                                                         attachments:@[]
+                                                                              silent:YES
+                                                                      delCollapseIDs:delIds
+                                                                                lazy:nil];
+                [payloadParser stub:@selector(pushNotificationPayloadFromDictionary:) andReturn:payload];
+                [payloadValidator stub:@selector(isPayloadValidForTracking:) andReturn:theValue(YES)];
+                
+                content = [UNNotificationContent nullMock];
+                [content stub:@selector(userInfo) andReturn:@{
+                    @"yamp" : @{
+                        @"i" : notificationID,
+                        @"del-collapse-ids" : delIds
+                    }
+                }];
+                
+                request = [UNNotificationRequest nullMock];
+                [request stub:@selector(identifier) andReturn:identifier];
+                [request stub:@selector(content) andReturn:content];
+                
+                notification = [UNNotification nullMock];
+                [notification stub:@selector(request) andReturn:request];
+                
+                [notificationCenter stub:@selector(getDeliveredNotificationsWithCompletionHandler:)
+                               withBlock:^id(NSArray *params) {
+                    void (^completionHandler)(NSArray<UNNotification *> *) = params[0];
+                    completionHandler(@[notification]);
+                    return nil;
+                }];
+            });
+            it(@"Should not remove notifications without del collapse ids", ^{
+                [payload stub:@selector(delCollapseIDs) andReturn:@[]];
+                
+                [[notificationCenter shouldNot] receive:@selector(getDeliveredNotificationsWithCompletionHandler:)];
+                [[notificationCenter shouldNot] receive:@selector(removeDeliveredNotificationsWithIdentifiers:)];
+                [[eventsController shouldNot] receive:@selector(reportPushNotificationWithNotificationID:
+                                                                actionType:
+                                                                actionID:
+                                                                onFailure:)
+                                        withArguments:kw_any(), kAMPEventsControllerActionTypeRemoved, kw_any(), kw_any()];
+                
+                [notificationsController handlePushNotification:@{}];
+            });
+            it(@"Should remove notification with del collapse ids", ^{
+                [[notificationCenter should] receive:@selector(removeDeliveredNotificationsWithIdentifiers:)
+                                       withArguments:@[identifier]];
+                
+                [notificationsController handlePushNotification:@{}];
+            });
+            
+            it(@"Should not remove notification if the push is not silent", ^{
+                [payload stub:@selector(silent) andReturn:theValue(NO)];
+                
+                [[notificationCenter shouldNot] receive:@selector(removeDeliveredNotificationsWithIdentifiers:)];
+                
+                [notificationsController handlePushNotification:@{}];
+            });
+            
+            it(@"Should track removal notification", ^{
+                [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:
+                                                             actionType:
+                                                             actionID:
+                                                             onFailure:)
+                                     withArguments:notificationID, kAMPEventsControllerActionTypeRemoved, kw_any(), kw_any()];
+                
+                [notificationsController handlePushNotification:@{}];
+            });
+            
+            it(@"Should not track removal notification if unable to parse the delivered notification", ^{
+                [content stub:@selector(userInfo) andReturn:nil];
+                
+                [[eventsController shouldNot] receive:@selector(reportPushNotificationWithNotificationID:
+                                                                actionType:
+                                                                actionID:
+                                                                onFailure:)
+                                        withArguments:kw_any(), kAMPEventsControllerActionTypeRemoved, kw_any(), kw_any()];
+                
+                [notificationsController handlePushNotification:@{}];
+            });
         });
 
         context(@"Library analytics reporting", ^{

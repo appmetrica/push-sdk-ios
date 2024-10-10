@@ -15,6 +15,7 @@ NSString *const kAMPEventsControllerActionTypeCustom = @"custom";
 NSString *const kAMPEventsControllerActionTypeProcessed = @"processed";
 NSString *const kAMPEventsControllerActionTypeShown = @"shown";
 NSString *const kAMPEventsControllerActionTypeIgnored = @"ignored";
+NSString *const kAMPEventsControllerActionTypeRemoved = @"removed";
 
 static NSString *const kAMPNotificationIDKey = @"notification_id";
 static NSString *const kAMPNotificationActionKey = @"action";

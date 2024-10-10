@@ -39,6 +39,7 @@ describe(@"AMPPushNotificationPayloadValidator", ^{
                                                                                                     userData:nil
                                                                                                  attachments:nil
                                                                                                       silent:NO
+                                                                                              delCollapseIDs:@[]
                                                                                                         lazy:nil];
             BOOL isValid = [validator isPayloadValidForTracking:payload];
             [[theValue(isValid) should] beNo];
@@ -50,6 +51,7 @@ describe(@"AMPPushNotificationPayloadValidator", ^{
                                                                                                     userData:nil
                                                                                                  attachments:nil
                                                                                                       silent:NO
+                                                                                              delCollapseIDs:@[]
                                                                                                         lazy:nil];
             BOOL isValid = [validator isPayloadValidForTracking:payload];
             [[theValue(isValid) should] beYes];
@@ -70,6 +72,7 @@ describe(@"AMPPushNotificationPayloadValidator", ^{
                                                                                                     userData:nil
                                                                                                  attachments:nil
                                                                                                       silent:NO
+                                                                                              delCollapseIDs:@[]
                                                                                                         lazy:nil];
             BOOL isValid = [validator isPayloadValidForURLOpening:payload];
             [[theValue(isValid) should] beNo];
@@ -81,6 +84,7 @@ describe(@"AMPPushNotificationPayloadValidator", ^{
                                                                                                     userData:nil
                                                                                                  attachments:nil
                                                                                                       silent:NO
+                                                                                              delCollapseIDs:@[]
                                                                                                         lazy:nil];
             BOOL isValid = [validator isPayloadValidForURLOpening:payload];
             [[theValue(isValid) should] beYes];
@@ -92,6 +96,7 @@ describe(@"AMPPushNotificationPayloadValidator", ^{
                                                                                                     userData:nil
                                                                                                  attachments:nil
                                                                                                       silent:YES
+                                                                                              delCollapseIDs:@[]
                                                                                                         lazy:nil];
             BOOL isValid = [validator isPayloadValidForURLOpening:payload];
             [[theValue(isValid) should] beNo];
@@ -112,6 +117,7 @@ describe(@"AMPPushNotificationPayloadValidator", ^{
                                                                                                     userData:nil
                                                                                                  attachments:nil
                                                                                                       silent:NO
+                                                                                              delCollapseIDs:@[]
                                                                                                         lazy:nil];
             BOOL isValid = [validator isPayloadValidForUserDataProviding:payload];
             [[theValue(isValid) should] beNo];
@@ -123,6 +129,7 @@ describe(@"AMPPushNotificationPayloadValidator", ^{
                                                                                                     userData:@""
                                                                                                  attachments:nil
                                                                                                       silent:NO
+                                                                                              delCollapseIDs:@[]
                                                                                                         lazy:nil];
             BOOL isValid = [validator isPayloadValidForUserDataProviding:payload];
             [[theValue(isValid) should] beYes];
@@ -134,6 +141,7 @@ describe(@"AMPPushNotificationPayloadValidator", ^{
                                                                                                     userData:@"data"
                                                                                                  attachments:nil
                                                                                                       silent:NO
+                                                                                              delCollapseIDs:@[]
                                                                                                         lazy:nil];
             BOOL isValid = [validator isPayloadValidForUserDataProviding:payload];
             [[theValue(isValid) should] beYes];

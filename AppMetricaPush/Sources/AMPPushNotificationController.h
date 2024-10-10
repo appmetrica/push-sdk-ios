@@ -29,7 +29,8 @@
             libraryAnalyticsTracker:(AMPLibraryAnalyticsTracker *)libraryAnalyticsTracker
               pendingPushController:(AMPPendingPushController *)pendingPushController
             deduplicationController:(AMPTrackingDeduplicationController *)deduplicationController
-              pendingNotifyStrategy:(AMPPendingNotificationStrategy*)pendingNotifyStrategy;
+              pendingNotifyStrategy:(AMPPendingNotificationStrategy*)pendingNotifyStrategy
+                 notificationCenter:(UNUserNotificationCenter *)notificationCenter;
 
 - (void)setDeviceTokenFromData:(NSData *)data pushEnvironment:(AMPAppMetricaPushEnvironment)pushEnvironment;
 - (void)handleApplicationDidFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
