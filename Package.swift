@@ -24,24 +24,42 @@ enum PushProduct: String, CaseIterable {
     var product: Product { .library(name: rawValue, targets: targets.map { $0.name }) }
 }
 
+let useSpmExternal = false
+
 enum ExternalDependency: String, CaseIterable {
     case appMetrica = "appmetrica-sdk-ios"
     case kiwi = "Kiwi"
+
+    var name: String { 
+        switch self {
+            case .appMetrica:
+                return useSpmExternal ? "spm-external.AppMetrica" : rawValue
+            default:
+                return useSpmExternal ? ("spm-external." + rawValue) : rawValue }
+        }
 
     static var allDependecies: [Package.Dependency] { allCases.map { $0.package } }
 
     var dependency: Target.Dependency {
         switch self {
-        case .appMetrica: return .product(name: "AppMetricaCore", package: rawValue)
-        case .kiwi: return .byName(name: rawValue)
+        case .appMetrica: return .product(name: "AppMetricaCore", package: name)
+        case .kiwi: return .byName(name: name)
         }
     }
 
     var package: Package.Dependency {
         switch self {
-        case .appMetrica: return .package(url: "https://github.com/appmetrica/appmetrica-sdk-ios", "5.2.0"..<"6.0.0")
-        case .kiwi: return .package(url: "https://github.com/appmetrica/Kiwi", exact: "3.0.1-spm")
+        case .appMetrica: return package(url: "https://github.com/appmetrica/appmetrica-sdk-ios", "5.2.0"..<"6.0.0")
+        case .kiwi: return package(url: "https://github.com/appmetrica/Kiwi", exact: "3.0.1-spm")
         }
+    }
+
+    private func package(url: String, _ version: Range<Version>) -> Package.Dependency {
+        useSpmExternal ? .package(id: name, version) : .package(url: url, version)
+    }
+
+    private func package(url: String, exact: Version) -> Package.Dependency {
+        useSpmExternal ? .package(id: name, exact: exact) : .package(url: url, exact: exact)
     }
 }
 
