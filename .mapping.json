@@ -1,4 +1,5 @@
 {
+  ".":"mobile/metrika/ios/push-sdk/public",
   ".gitignore":"mobile/metrika/ios/push-sdk/public/.gitignore",
   ".swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata":"mobile/metrika/ios/push-sdk/public/.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata",
   ".swiftpm/xcode/xcshareddata/xcschemes/AppMetricaPush-Package.xcscheme":"mobile/metrika/ios/push-sdk/public/.swiftpm/xcode/xcshareddata/xcschemes/AppMetricaPush-Package.xcscheme",
