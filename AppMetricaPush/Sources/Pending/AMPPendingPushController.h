@@ -15,7 +15,6 @@
 @property (nonatomic, weak) id<AMPPendingPushControllerDelegate> delegate;
 
 - (void)updateExtensionAppGroup:(NSString *)appGroup;
-- (void)handlePendingPushReceivingWithNotificationID:(NSString *)notificationID;
 - (void)notifyAboutPendingPushes;
 
 @end

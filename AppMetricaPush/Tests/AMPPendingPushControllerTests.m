@@ -45,23 +45,6 @@ describe(@"AMPPendingPushController", ^{
             [controller updateExtensionAppGroup:@"appGroup"];
         });
 
-        context(@"Handle pending pushes receiving", ^{
-
-            it(@"Should create push with valid parameters", ^{
-                NSDate *date = [NSDate date];
-                [NSDate stub:@selector(date) andReturn:date];
-                [[pendingPush should] receive:@selector(initWithNotificationID:receivingDate:)
-                                withArguments:notificationID, date];
-                [controller handlePendingPushReceivingWithNotificationID:notificationID];
-            });
-
-            it(@"Should put received push in userDefaults", ^{
-                [[storage should] receive:@selector(addPendingPush:) withArguments:pendingPush];
-                [controller handlePendingPushReceivingWithNotificationID:notificationID];
-            });
-        });
-
-
         context(@"Handle pending pushes notifying", ^{
 
             context(@"Notification", ^{

@@ -133,17 +133,13 @@ NS_SWIFT_NAME(AppMetricaPush)
 + (BOOL)isNotificationRelatedToSDK:(NSDictionary *)userInfo;
 
 /** Informing the library about appGroup that is shared between the app and notification service extension.
+ Since 3.0.0 AppMetricaPush sends events in extension. Use this method if you need to send saved notifications in application.
+
+ This method will be removed in future.
 
  @param appGroup Shared appGroup between the app and notification service extension.
  */
 + (void)setExtensionAppGroup:(NSString *)appGroup;
-
-/** Disables events cache that is used in extensions to track notifications receive.
-
- After calling this method other methods will require AppMetrica activation:
- + [AMPAppMetricaPush handleDidReceiveNotificationRequest:]
- */
-+ (void)disableEventsCaching;
 
 @end
 

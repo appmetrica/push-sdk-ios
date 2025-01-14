@@ -49,7 +49,7 @@ enum ExternalDependency: String, CaseIterable {
 
     var package: Package.Dependency {
         switch self {
-        case .appMetrica: return package(url: "https://github.com/appmetrica/appmetrica-sdk-ios", "5.2.0"..<"6.0.0")
+        case .appMetrica: return package(url: "https://github.com/appmetrica/appmetrica-sdk-ios", "5.9.0"..<"6.0.0")
         case .kiwi: return package(url: "https://github.com/appmetrica/Kiwi", exact: "3.0.1-spm")
         }
     }
@@ -82,6 +82,7 @@ extension PushTarget {
                 "include",
                 "include/" + name,
                 
+                "Pending",
                 "Lazy",
                 "Utils",
             ]

@@ -90,11 +90,4 @@ NSErrorDomain const kAMPAppMetricaPushErrorDomain = @"io.appmetrica.push";
     [[AMPPushNotificationController sharedInstance] setExtensionAppGroup:appGroup];
 }
 
-#pragma mark - Extended
-
-+ (void)disableEventsCaching
-{
-    [[AMPPushNotificationController sharedInstance] disableEventsCaching];
-}
-
 @end

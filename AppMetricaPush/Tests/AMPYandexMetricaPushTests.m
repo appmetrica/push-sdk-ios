@@ -82,11 +82,6 @@ describe(@"AMPPushMetricaPush", ^{
         [AMPAppMetricaPush setExtensionAppGroup:appGroup];
     });
 
-    it(@"Should call disable events caching", ^{
-        [[controller should] receive:@selector(disableEventsCaching)];
-        [AMPAppMetricaPush disableEventsCaching];
-    });
-
     if (@available(iOS 13.0, *)) {
         it(@"Should call handle scene connection options", ^{
             UISceneConnectionOptions *connectionOptions = [UISceneConnectionOptions nullMock];

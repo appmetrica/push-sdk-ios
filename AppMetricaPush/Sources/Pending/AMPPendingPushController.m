@@ -22,15 +22,6 @@
     }
 }
 
-- (void)handlePendingPushReceivingWithNotificationID:(NSString *)notificationID
-{
-    AMPPendingPush *push = [[AMPPendingPush alloc] initWithNotificationID:notificationID
-                                                            receivingDate:[NSDate date]];
-    @synchronized (self) {
-        [self.storage addPendingPush:push];
-    }
-}
-
 - (void)notifyAboutPendingPushes
 {
     NSArray *pushes = nil;

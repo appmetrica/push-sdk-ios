@@ -17,7 +17,6 @@
 #import "AMPPendingPush.h"
 #import "AMPTrackingDeduplicationController.h"
 #import "AMPLazyPushProvider.h"
-#import "AMPPendingNotificationStrategy.h"
 
 #import <UIKit/UIKit.h>
 #import <UserNotifications/UserNotifications.h>
@@ -25,7 +24,7 @@
 #import <AppMetricaCoreUtils/AppMetricaCoreUtils.h>
 #import <AppMetricaPlatform/AppMetricaPlatform.h>
 
-@interface AMPPushNotificationController () <AMPPendingPushControllerDelegate, AMPApplicationStateProviderDelegate, AMPPendingNotificationStrategyDelegate>
+@interface AMPPushNotificationController () <AMPPendingPushControllerDelegate>
 
 @property (nonatomic, strong, readonly) AMPDeviceTokenParser *tokenParser;
 
@@ -39,54 +38,35 @@
 @property (nonatomic, strong, readonly) AMPPendingPushController *pendingPushController;
 @property (nonatomic, strong, readonly) AMPTrackingDeduplicationController *deduplicationController;
 
-@property (nonatomic, strong, readonly) AMPPendingNotificationStrategy *pendingNotifyStrategy;
 @property (nonatomic, strong, readonly) UNUserNotificationCenter *notificationCenter;
-
-@property (nonatomic, assign) BOOL eventsCaching;
 
 @end
 
 @implementation AMPPushNotificationController
 
+@synthesize pendingPushController = _pendingPushController;
+
 - (instancetype)init
 {
     AMPDispatchQueueWhenActiveStateExecutor *executor = [[AMPDispatchQueueWhenActiveStateExecutor alloc] init];
-    AMPPendingPushController *pendingPushController = [[AMPPendingPushController alloc] init];
-    pendingPushController.delegate = self;
-    AMPApplicationStateProvider *applicationStateProvider = [[AMPApplicationStateProvider alloc] init];
-    applicationStateProvider.delegate = self;
-    
-    // no sense using timer in extension, extension code only stores delivery data
-    AMPPendingNotificationStrategy *strategy = nil;
-    if ([AMAPlatformDescription isExtension] == NO) {
-        AMACancelableDelayedExecutor *strategyExecutor = [[AMACancelableDelayedExecutor alloc] initWithIdentifier:self];
-        strategy = [[AMPPendingNotificationStrategy alloc] initWithExecutor:strategyExecutor];
-        strategy.delegate = self;
-    }
     
     return [self initWithTokenParser:[[AMPDeviceTokenParser alloc] init]
                        payloadParser:[[AMPPushNotificationPayloadParser alloc] init]
                     payloadValidator:[[AMPPushNotificationPayloadValidator alloc] init]
-            applicationStateProvider:applicationStateProvider
                     targetURLHandler:[[AMPTargetURLHandler alloc] initWithExecutor:executor]
                     eventsController:[AMPEventsController sharedInstance]
              libraryAnalyticsTracker:[AMPLibraryAnalyticsTracker sharedInstance]
-               pendingPushController:pendingPushController
              deduplicationController:[[AMPTrackingDeduplicationController alloc] init]
-               pendingNotifyStrategy:strategy
                   notificationCenter:[UNUserNotificationCenter currentNotificationCenter]];
 }
 
 - (instancetype)initWithTokenParser:(AMPDeviceTokenParser *)tokenParser
                       payloadParser:(AMPPushNotificationPayloadParser *)payloadParser
                    payloadValidator:(AMPPushNotificationPayloadValidator *)payloadValidator
-           applicationStateProvider:(AMPApplicationStateProvider *)applicationStateProvider
                    targetURLHandler:(AMPTargetURLHandler *)targetURLHandler
                    eventsController:(AMPEventsController *)eventsController
             libraryAnalyticsTracker:(AMPLibraryAnalyticsTracker *)libraryAnalyticsTracker
-              pendingPushController:(AMPPendingPushController *)pendingPushController
             deduplicationController:(AMPTrackingDeduplicationController *)deduplicationController
-              pendingNotifyStrategy:(AMPPendingNotificationStrategy *)pendingNotifyStrategy
                  notificationCenter:(UNUserNotificationCenter *)notificationCenter
 {
     self = [super init];
@@ -94,19 +74,23 @@
         _tokenParser = tokenParser;
         _payloadParser = payloadParser;
         _payloadValidator = payloadValidator;
-        _applicationStateProvider = applicationStateProvider;
         _targetURLHandler = targetURLHandler;
 
         _eventsController = eventsController;
         _libraryAnalyticsTracker = libraryAnalyticsTracker;
-        _pendingPushController = pendingPushController;
         _deduplicationController = deduplicationController;
-        _pendingNotifyStrategy = pendingNotifyStrategy;
         _notificationCenter = notificationCenter;
-
-        _eventsCaching = YES;
     }
     return self;
+}
+
+- (AMPPendingPushController *)pendingPushController
+{
+    if (_pendingPushController == nil) {
+        _pendingPushController = [AMPPendingPushController new];
+        _pendingPushController.delegate = self;
+    }
+    return _pendingPushController;
 }
 
 - (void)setDeviceTokenFromData:(NSData *)data pushEnvironment:(AMPAppMetricaPushEnvironment)pushEnvironment
@@ -116,13 +100,10 @@
     [AMPTokenEventModelProvider retrieveTokenEventWithToken:token block:^(AMPTokenEvent *tokenModel){
         [self.eventsController reportDeviceTokenWithModel:tokenModel pushEnvironment:pushEnvironment onFailure:nil];
     }];
-
-    [self notifyAboutPendingPushes];
 }
 
 - (void)handleApplicationDidFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    [self notifyAboutPendingPushes];
     NSDictionary *pushNotificationUserInfo = launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey];
     if (pushNotificationUserInfo != nil) {
         [self handlePushNotification:pushNotificationUserInfo applicationState:AMPApplicationStateBackground];
@@ -131,8 +112,6 @@
 
 - (void)handleSceneWillConnectToSessionWithOptions:(UISceneConnectionOptions *)connectionOptions
 {
-    [self notifyAboutPendingPushes];
-
     NSDictionary *pushNotificationUserInfo = connectionOptions.notificationResponse.notification.request.content.userInfo;
     if (pushNotificationUserInfo != nil) {
         [self handlePushNotification:pushNotificationUserInfo applicationState:AMPApplicationStateBackground];
@@ -149,14 +128,8 @@
 
 - (void)handleDidReceiveNotificationWithNotificationID:(NSString *)notificationID
 {
-    if (self.eventsCaching) {
-        [self.pendingNotifyStrategy handlePushNotification];
-        [self.pendingPushController handlePendingPushReceivingWithNotificationID:notificationID];
-    }
-    else {
-        [self trackPushNotificationReceivedWithNotificationID:notificationID];
-        [self.eventsController sendEventsBuffer];
-    }
+    [self trackPushNotificationReceivedWithNotificationID:notificationID];
+    [self.eventsController sendEventsBuffer];
 }
 
 - (void)handleNotificationContent:(UNNotificationContent *)content
@@ -301,16 +274,8 @@
 
 - (void)setExtensionAppGroup:(NSString *)appGroup
 {
+    // no sense if application or extension are callee, both cases cause to create events and send them
     [self.pendingPushController updateExtensionAppGroup:appGroup];
-}
-
-- (void)disableEventsCaching
-{
-    self.eventsCaching = NO;
-}
-
-- (void)notifyAboutPendingPushes
-{
     [self.pendingPushController notifyAboutPendingPushes];
 }
 
@@ -358,25 +323,6 @@
 - (void)pendingPushController:(AMPPendingPushController *)controller didNotifyPendingPush:(AMPPendingPush *)push
 {
     [self trackPushNotificationReceivedWithNotificationID:push.notificationID];
-}
-
-#pragma mark - AMPApplicationStateProviderDelegate
-
-- (void)applicationStateProvider:(AMPApplicationStateProvider *)applicationStateProvider
-                  didChangeState:(AMPApplicationState)state
-{
-    if (state == AMPApplicationStateForeground) {
-        [self notifyAboutPendingPushes];
-    }
-}
-
-#pragma mark - AMPPendingNotifyStrategyDelegate
-
-- (void)pendingNotificationStrategyDidRequestPush:(AMPPendingNotificationStrategy *)strategy
-{
-    // this method is called only in app. No need to check for application
-    // self.strategy is nil if it is extension
-    [self notifyAboutPendingPushes];
 }
 
 @end

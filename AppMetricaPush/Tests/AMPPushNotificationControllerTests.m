@@ -17,7 +17,6 @@
 #import "AMPPendingPushController.h"
 #import "AMPPendingPush.h"
 #import "AMPTrackingDeduplicationController.h"
-#import "AMPPendingNotificationStrategy.h"
 
 @interface AMPPushNotificationController () <AMPPendingPushControllerDelegate, AMPApplicationStateProviderDelegate>
 
@@ -33,11 +32,8 @@ describe(@"AMPPushNotificationController", ^{
     AMPDeviceTokenParser *__block tokenParser = nil;
     AMPPushNotificationPayloadParser *__block payloadParser = nil;
     AMPPushNotificationPayloadValidator *__block payloadValidator = nil;
-    AMPApplicationStateProvider *__block applicationStateProvider = nil;
     AMPTargetURLHandler *__block targetURLHandler = nil;
-    AMPPendingPushController *__block pendingPushController = nil;
     AMPTrackingDeduplicationController *__block deduplicationController = nil;
-    AMPPendingNotificationStrategy *__block notifyStrategy = nil;
     UNUserNotificationCenter *__block notificationCenter = nil;
 
     AMPEventsController *__block eventsController = nil;
@@ -47,29 +43,21 @@ describe(@"AMPPushNotificationController", ^{
         tokenParser = [AMPDeviceTokenParser nullMock];
         payloadParser = [AMPPushNotificationPayloadParser nullMock];
         payloadValidator = [AMPPushNotificationPayloadValidator nullMock];
-        applicationStateProvider = [AMPApplicationStateProvider nullMock];
-        [applicationStateProvider stub:@selector(currentApplicationState) andReturn:@0];
         targetURLHandler = [AMPTargetURLHandler nullMock];
         libraryTracker = [AMPLibraryAnalyticsTracker nullMock];
         eventsController = [AMPEventsController nullMock];
-        pendingPushController = [AMPPendingPushController nullMock];
         deduplicationController = [AMPTrackingDeduplicationController nullMock];
-        notifyStrategy = [AMPPendingNotificationStrategy nullMock];
         [deduplicationController stub:@selector(shouldReportEventForNotification:)
                             andReturn:theValue(YES)];
-        [notifyStrategy stub:@selector(handlePushNotification)];
         notificationCenter = [UNUserNotificationCenter nullMock];
 
         notificationsController = [[AMPPushNotificationController alloc] initWithTokenParser:tokenParser
                                                                                payloadParser:payloadParser
                                                                             payloadValidator:payloadValidator
-                                                                    applicationStateProvider:applicationStateProvider
                                                                             targetURLHandler:targetURLHandler
                                                                             eventsController:eventsController
                                                                      libraryAnalyticsTracker:libraryTracker
-                                                                       pendingPushController:pendingPushController
                                                                      deduplicationController:deduplicationController
-                                                                       pendingNotifyStrategy:notifyStrategy
                                                                           notificationCenter:notificationCenter];
     });
 
@@ -496,25 +484,6 @@ describe(@"AMPPushNotificationController", ^{
                     [notificationsController handlePushNotification:@{}];
                 });
 
-                it(@"Shoud pass AMPApplicationStateForeground from state provider", ^{
-                    [applicationStateProvider stub:@selector(currentApplicationState) andReturn:theValue(AMPApplicationStateForeground)];
-                    [[targetURLHandler should] receive:@selector(handleURL:applicationState:) withArguments:kw_any(), theValue(AMPApplicationStateForeground)];
-                    [notificationsController handlePushNotification:@{}];
-                });
-
-                it(@"Shoud pass AMPApplicationStateBackground from state provider", ^{
-                    [applicationStateProvider stub:@selector(currentApplicationState) andReturn:theValue(AMPApplicationStateBackground)];
-                    [[targetURLHandler should] receive:@selector(handleURL:applicationState:) withArguments:kw_any(), theValue(AMPApplicationStateBackground)];
-                    [notificationsController handlePushNotification:@{}];
-                });
-
-                it(@"Shoud pass userNotificationCenterPushApplicationState value from state provider for UNC push", ^{
-                    [applicationStateProvider stub:@selector(userNotificationCenterPushApplicationState)
-                                         andReturn:theValue(AMPApplicationStateBackground)];
-                    [[targetURLHandler should] receive:@selector(handleURL:applicationState:) withArguments:kw_any(), theValue(AMPApplicationStateBackground)];
-                    [notificationsController handleUserNotificationCenterPush:@{}];
-                });
-
                 it(@"Shoud pass URL value from payload", ^{
                     [[targetURLHandler should] receive:@selector(handleURL:applicationState:) withArguments:targetURL, kw_any()];
                     [notificationsController handlePushNotification:@{}];
@@ -541,56 +510,13 @@ describe(@"AMPPushNotificationController", ^{
                     [payloadValidator stub:@selector(isPayloadValidForTracking:) andReturn:theValue(NO)];
                 });
 
-                it(@"Should not store push in pending", ^{
-                    [[pendingPushController shouldNot] receive:@selector(handlePendingPushReceivingWithNotificationID:)];
-                    [notificationsController handleDidReceiveNotificationRequestWithUserInfo:userInfo];
-                });
-
                 it(@"Should not report directly", ^{
                     [[eventsController shouldNot] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)];
                     [notificationsController handleDidReceiveNotificationRequestWithUserInfo:userInfo];
-                });
-            });
-
-            context(@"Caching enabled", ^{
-                it(@"Should parse payload", ^{
-                    [[payloadParser should] receive:@selector(pushNotificationPayloadFromDictionary:) withArguments:userInfo];
-                    [notificationsController handleDidReceiveNotificationRequestWithUserInfo:userInfo];
-                });
-
-                it(@"Should not report directly", ^{
-                    [[eventsController shouldNot] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)];
-                    [notificationsController handleDidReceiveNotificationRequestWithUserInfo:userInfo];
-                });
-
-                it(@"Should not send events buffer", ^{
-                    [[eventsController shouldNot] receive:@selector(sendEventsBuffer)];
-                    [notificationsController handleDidReceiveNotificationRequestWithUserInfo:userInfo];
-                });
-
-                it(@"Should store push in pending", ^{
-                    [[pendingPushController should] receive:@selector(handlePendingPushReceivingWithNotificationID:)
-                                              withArguments:notificationID];
-                    [notificationsController handleDidReceiveNotificationRequestWithUserInfo:userInfo];
-                });
-
-                context(@"With ID", ^{
-                    it(@"Should store push in pending", ^{
-                        [[pendingPushController should] receive:@selector(handlePendingPushReceivingWithNotificationID:)
-                                                  withArguments:notificationID];
-                        [notificationsController handleDidReceiveNotificationWithNotificationID:notificationID];
-                    });
-                    it(@"Should call strategy", ^{
-                        [[notifyStrategy should] receive:@selector(handlePushNotification)];
-                        [notificationsController handleDidReceiveNotificationWithNotificationID:notificationID];
-                    });
                 });
             });
 
             context(@"Caching disabled", ^{
-                beforeEach(^{
-                    [notificationsController disableEventsCaching];
-                });
 
                 it(@"Should parse payload", ^{
                     [[payloadParser should] receive:@selector(pushNotificationPayloadFromDictionary:) withArguments:userInfo];
@@ -611,11 +537,6 @@ describe(@"AMPPushNotificationController", ^{
 
                 it(@"Should send events buffer", ^{
                     [[eventsController should] receive:@selector(sendEventsBuffer)];
-                    [notificationsController handleDidReceiveNotificationRequestWithUserInfo:userInfo];
-                });
-
-                it(@"Should not store push in pending", ^{
-                    [[pendingPushController shouldNot] receive:@selector(handlePendingPushReceivingWithNotificationID:)];
                     [notificationsController handleDidReceiveNotificationRequestWithUserInfo:userInfo];
                 });
 
@@ -708,43 +629,12 @@ describe(@"AMPPushNotificationController", ^{
     context(@"Set extension app group", ^{
         it(@"Should call pendingPushController", ^{
             NSString *extensionAppGroup = @"extensionAppGroup";
+            AMPPendingPushController *pendingPushController = [AMPPendingPushController nullMock];
+            [notificationsController stub:@selector(pendingPushController) andReturn:pendingPushController];
             [[pendingPushController should] receive:@selector(updateExtensionAppGroup:)
                                       withArguments:extensionAppGroup];
+            [[pendingPushController should] receive:@selector(notifyAboutPendingPushes)];
             [notificationsController setExtensionAppGroup:extensionAppGroup];
-        });
-    });
-    
-    context(@"Notify about pending pushes", ^{
-
-        it(@"Should call notifyAboutPendingPushes after handleApplicationDidFinishLaunchingWithOptions call", ^{
-            [[pendingPushController should] receive:@selector(notifyAboutPendingPushes)];
-            [notificationsController handleApplicationDidFinishLaunchingWithOptions:nil];
-        });
-
-        if (@available(iOS 13.0, *)) {
-            it(@"Should call notifyAboutPendingPushes after handleSceneWillConnectToSessionWithOptions call", ^{
-                [[pendingPushController should] receive:@selector(notifyAboutPendingPushes)];
-                [notificationsController handleSceneWillConnectToSessionWithOptions:nil];
-            });
-        }
-        
-        it(@"Should call notifyAboutPendingPushes after setDeviceTokenFromData call", ^{
-            [[pendingPushController should] receive:@selector(notifyAboutPendingPushes)];
-            [notificationsController setDeviceTokenFromData:nil pushEnvironment:AMPAppMetricaPushEnvironmentDevelopment];
-        });
-
-        context(@"Application state change", ^{
-            it(@"Should call notifyAboutPendingPushes after entering foreground", ^{
-                [[pendingPushController should] receive:@selector(notifyAboutPendingPushes)];
-                [notificationsController applicationStateProvider:applicationStateProvider
-                                                   didChangeState:AMPApplicationStateForeground];
-            });
-
-            it(@"Should not call notifyAboutPendingPushes after entering background", ^{
-                [[pendingPushController shouldNot] receive:@selector(notifyAboutPendingPushes)];
-                [notificationsController applicationStateProvider:applicationStateProvider
-                                                   didChangeState:AMPApplicationStateBackground];
-            });
         });
     });
 
@@ -764,6 +654,7 @@ describe(@"AMPPushNotificationController", ^{
     context(@"Pending push handled", ^{
         NSString *const notificationID = @"notificationID";
         AMPPendingPush *__block pendingPush = nil;
+        AMPPendingPushController *__block pendingPushController = nil;
 
         beforeEach(^{
             pendingPush = [[AMPPendingPush alloc] initWithNotificationID:notificationID receivingDate:[NSDate date]];
@@ -780,24 +671,6 @@ describe(@"AMPPushNotificationController", ^{
                                  withArguments:notificationID, kAMPEventsControllerActionTypeShown, nil, kw_any()];
             [notificationsController pendingPushController:pendingPushController didNotifyPendingPush:pendingPush];
         });
-    });
-    
-    context(@"Notify strategy when receive new notification", ^{
-        
-        id<AMPPendingNotificationStrategyDelegate> (^nc)() = ^{ return (id<AMPPendingNotificationStrategyDelegate>)notificationsController; };
-        
-        context(@"in app", ^{
-            beforeEach(^{
-                [applicationStateProvider stub:@selector(isRunningInExtension) andReturn:theValue(NO)];
-            });
-            
-            it(@"should not call notify about pending push", ^{
-                [[pendingPushController should] receive:@selector(notifyAboutPendingPushes)];
-                [nc() pendingNotificationStrategyDidRequestPush:notifyStrategy];
-            });
-            
-        });
-        
     });
 
 });

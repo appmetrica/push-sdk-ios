@@ -12,24 +12,19 @@
 @class AMPLibraryAnalyticsTracker;
 @class AMPPendingPushController;
 @class UNNotificationRequest;
-@class AMPPendingPushController;
 @class AMPTrackingDeduplicationController;
 @class UNNotificationContent;
 @class UISceneConnectionOptions;
-@class AMPPendingNotificationStrategy;
 
 @interface AMPPushNotificationController : NSObject
 
 - (instancetype)initWithTokenParser:(AMPDeviceTokenParser *)tokenParser
                       payloadParser:(AMPPushNotificationPayloadParser *)payloadParser
                    payloadValidator:(AMPPushNotificationPayloadValidator *)payloadValidator
-           applicationStateProvider:(AMPApplicationStateProvider *)applicationStateProvider
                    targetURLHandler:(AMPTargetURLHandler *)targetURLHandler
                    eventsController:(AMPEventsController *)eventsController
             libraryAnalyticsTracker:(AMPLibraryAnalyticsTracker *)libraryAnalyticsTracker
-              pendingPushController:(AMPPendingPushController *)pendingPushController
             deduplicationController:(AMPTrackingDeduplicationController *)deduplicationController
-              pendingNotifyStrategy:(AMPPendingNotificationStrategy*)pendingNotifyStrategy
                  notificationCenter:(UNUserNotificationCenter *)notificationCenter;
 
 - (void)setDeviceTokenFromData:(NSData *)data pushEnvironment:(AMPAppMetricaPushEnvironment)pushEnvironment;
@@ -48,8 +43,6 @@
 - (void)setURLOpenDispatchQueue:(dispatch_queue_t)queue;
 - (void)handlePushNotificationDismissWithUserInfo:(NSDictionary *)userInfo;
 - (void)setExtensionAppGroup:(NSString *)appGroup;
-
-- (void)disableEventsCaching;
 
 + (instancetype)sharedInstance;
 
