@@ -70,13 +70,15 @@ Here's how to add AppMetrica Push SDK to your project (works for both SwiftUI an
 
 2. `import AppMetricaPush`.
 
-3. Configure AppMetricaPush by setting `UNUserNotificationCenter.current().delegate = AppMetricaPush.userNotificationCenterDelegate` in `application(_:didFinishLaunchingWithOptions:)`.
+3. If you are using notification service extension, set up [AppMetrica with shared AppGroup](https://appmetrica.io/docs/en/sdk/ios/analytics/ios-appgroup) and initialize AppMetrica in the extension.
 
-4. Register device token in `application(_:didRegisterForRemoteNotificationsWithDeviceToken:)`
+4. Configure AppMetricaPush by setting `UNUserNotificationCenter.current().delegate = AppMetricaPush.userNotificationCenterDelegate` in `application(_:didFinishLaunchingWithOptions:)`.
 
-5. Call `UIApplication.registerForRemoteNotifications()`. See [documentation](https://developer.apple.com/documentation/uikit/uiapplication/1623078-registerforremotenotifications) to enable visible notifications.
+5. Register device token in `application(_:didRegisterForRemoteNotificationsWithDeviceToken:)`
 
-6. (Optional) If you also use `UISceneDelegate` add `AppMetricaPush.handleSceneWillConnectToSession(with:)` in `scene(_:willConnectTo:options:)`
+6. Call `UIApplication.registerForRemoteNotifications()`. See [documentation](https://developer.apple.com/documentation/uikit/uiapplication/1623078-registerforremotenotifications) to enable visible notifications.
+
+7. (Optional) If you also use `UISceneDelegate` add `AppMetricaPush.handleSceneWillConnectToSession(with:)` in `scene(_:willConnectTo:options:)`
 
 ### For UIKit:
 
@@ -139,6 +141,29 @@ struct YourAppNameApp: App {
             ContentView()
         }
     }
+}
+```
+
+## Notification Service Extension
+
+If you are using notification service extension, put this in your `NotificationService.swift`
+```Swift
+class NotificationService: UNNotificationServiceExtension {
+    var contentHandler: ((UNNotificationContent) -> Void)?
+    var bestAttemptContent: UNMutableNotificationContent?
+
+    override func didReceive(_ request: UNNotificationRequest, 
+                             withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
+    // system does not always spawn new process to handle few notification, but AppMetrica ignore second initialization
+    let configuration = AppMetricaConfiguration(apiKey: "API-KEY")!
+    AppMetrica.activate(with: configuration)
+    
+    self.contentHandler = contentHandler
+    bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
+
+    // custom logic
+
+    AppMetrica.sendEventsBuffer()
 }
 ```
 
