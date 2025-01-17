@@ -22,7 +22,7 @@ AppMetrica Push SDK allows you to send targeted push notifications to app users.
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/appmetrica/push-sdk-ios", from: "2.0.0")
+    .package(url: "https://github.com/appmetrica/push-sdk-ios", from: "3.0.0")
 ],
 ```
 
@@ -46,10 +46,10 @@ dependencies: [
 ```ruby
 target 'YourAppName' do
     # For all analytics features, add this umbrella module:
-    pod 'AppMetricaPush', '~> 2.0.0'
+    pod 'AppMetricaPush', '~> 3.0.0'
 
     # Optionally add Lazy Push pod
-    pod 'AppMetricaPushLazy', '~> 2.0.0'
+    pod 'AppMetricaPushLazy', '~> 3.0.0'
 end
 ```
 
