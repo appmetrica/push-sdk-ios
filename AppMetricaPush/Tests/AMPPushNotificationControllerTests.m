@@ -32,6 +32,7 @@ describe(@"AMPPushNotificationController", ^{
     AMPDeviceTokenParser *__block tokenParser = nil;
     AMPPushNotificationPayloadParser *__block payloadParser = nil;
     AMPPushNotificationPayloadValidator *__block payloadValidator = nil;
+    AMPApplicationStateProvider *__block applicationStateProvider = nil;
     AMPTargetURLHandler *__block targetURLHandler = nil;
     AMPTrackingDeduplicationController *__block deduplicationController = nil;
     UNUserNotificationCenter *__block notificationCenter = nil;
@@ -43,6 +44,8 @@ describe(@"AMPPushNotificationController", ^{
         tokenParser = [AMPDeviceTokenParser nullMock];
         payloadParser = [AMPPushNotificationPayloadParser nullMock];
         payloadValidator = [AMPPushNotificationPayloadValidator nullMock];
+        applicationStateProvider = [AMPApplicationStateProvider nullMock];
+        [applicationStateProvider stub:@selector(currentApplicationState) andReturn:@0];
         targetURLHandler = [AMPTargetURLHandler nullMock];
         libraryTracker = [AMPLibraryAnalyticsTracker nullMock];
         eventsController = [AMPEventsController nullMock];
@@ -54,6 +57,7 @@ describe(@"AMPPushNotificationController", ^{
         notificationsController = [[AMPPushNotificationController alloc] initWithTokenParser:tokenParser
                                                                                payloadParser:payloadParser
                                                                             payloadValidator:payloadValidator
+                                                                    applicationStateProvider:applicationStateProvider
                                                                             targetURLHandler:targetURLHandler
                                                                             eventsController:eventsController
                                                                      libraryAnalyticsTracker:libraryTracker
@@ -482,6 +486,26 @@ describe(@"AMPPushNotificationController", ^{
                     [deduplicationController stub:@selector(shouldReportEventForNotification:) andReturn:theValue(NO)];
                     [[targetURLHandler shouldNot] receive:@selector(handleURL:applicationState:)];
                     [notificationsController handlePushNotification:@{}];
+                });
+                
+                
+                it(@"Shoud pass AMPApplicationStateForeground from state provider", ^{
+                    [applicationStateProvider stub:@selector(currentApplicationState) andReturn:theValue(AMPApplicationStateForeground)];
+                    [[targetURLHandler should] receive:@selector(handleURL:applicationState:) withArguments:kw_any(), theValue(AMPApplicationStateForeground)];
+                    [notificationsController handlePushNotification:@{}];
+                });
+
+                it(@"Shoud pass AMPApplicationStateBackground from state provider", ^{
+                    [applicationStateProvider stub:@selector(currentApplicationState) andReturn:theValue(AMPApplicationStateBackground)];
+                    [[targetURLHandler should] receive:@selector(handleURL:applicationState:) withArguments:kw_any(), theValue(AMPApplicationStateBackground)];
+                    [notificationsController handlePushNotification:@{}];
+                });
+
+                it(@"Shoud pass userNotificationCenterPushApplicationState value from state provider for UNC push", ^{
+                    [applicationStateProvider stub:@selector(userNotificationCenterPushApplicationState)
+                                         andReturn:theValue(AMPApplicationStateBackground)];
+                    [[targetURLHandler should] receive:@selector(handleURL:applicationState:) withArguments:kw_any(), theValue(AMPApplicationStateBackground)];
+                    [notificationsController handleUserNotificationCenterPush:@{}];
                 });
 
                 it(@"Shoud pass URL value from payload", ^{

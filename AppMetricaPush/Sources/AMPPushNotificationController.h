@@ -21,6 +21,7 @@
 - (instancetype)initWithTokenParser:(AMPDeviceTokenParser *)tokenParser
                       payloadParser:(AMPPushNotificationPayloadParser *)payloadParser
                    payloadValidator:(AMPPushNotificationPayloadValidator *)payloadValidator
+           applicationStateProvider:(AMPApplicationStateProvider*)applicationStateProvider
                    targetURLHandler:(AMPTargetURLHandler *)targetURLHandler
                    eventsController:(AMPEventsController *)eventsController
             libraryAnalyticsTracker:(AMPLibraryAnalyticsTracker *)libraryAnalyticsTracker
