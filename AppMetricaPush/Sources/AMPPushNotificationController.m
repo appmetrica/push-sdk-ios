@@ -49,10 +49,12 @@
 - (instancetype)init
 {
     AMPDispatchQueueWhenActiveStateExecutor *executor = [[AMPDispatchQueueWhenActiveStateExecutor alloc] init];
+    AMPApplicationStateProvider *applicationStateProvider = [[AMPApplicationStateProvider alloc] init];
     
     return [self initWithTokenParser:[[AMPDeviceTokenParser alloc] init]
                        payloadParser:[[AMPPushNotificationPayloadParser alloc] init]
                     payloadValidator:[[AMPPushNotificationPayloadValidator alloc] init]
+            applicationStateProvider:applicationStateProvider
                     targetURLHandler:[[AMPTargetURLHandler alloc] initWithExecutor:executor]
                     eventsController:[AMPEventsController sharedInstance]
              libraryAnalyticsTracker:[AMPLibraryAnalyticsTracker sharedInstance]
@@ -63,6 +65,7 @@
 - (instancetype)initWithTokenParser:(AMPDeviceTokenParser *)tokenParser
                       payloadParser:(AMPPushNotificationPayloadParser *)payloadParser
                    payloadValidator:(AMPPushNotificationPayloadValidator *)payloadValidator
+           applicationStateProvider:(AMPApplicationStateProvider*)applicationStateProvider
                    targetURLHandler:(AMPTargetURLHandler *)targetURLHandler
                    eventsController:(AMPEventsController *)eventsController
             libraryAnalyticsTracker:(AMPLibraryAnalyticsTracker *)libraryAnalyticsTracker
@@ -74,6 +77,7 @@
         _tokenParser = tokenParser;
         _payloadParser = payloadParser;
         _payloadValidator = payloadValidator;
+        _applicationStateProvider = applicationStateProvider;
         _targetURLHandler = targetURLHandler;
 
         _eventsController = eventsController;
