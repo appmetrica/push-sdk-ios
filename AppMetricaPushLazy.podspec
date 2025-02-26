@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'AppMetricaPushLazy'
-  s.version = '3.0.1'
+  s.version = '3.0.2'
   s.summary = 'AppMetrica Push Lazy Notifications SDK'
 
   s.homepage = 'https://appmetrica.io'
