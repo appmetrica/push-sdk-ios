@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = 'AppMetricaPush'
-  s.version = '3.1.0'
+  s.version = '3.2.0'
   s.summary = 'AppMetrica Push Notifications SDK'
 
   s.homepage = 'https://appmetrica.io'

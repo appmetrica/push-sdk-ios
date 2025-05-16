@@ -3,7 +3,7 @@
 #define __AMP_VERSION_H__
 
 #define AMP_VERSION_MAJOR 3
-#define AMP_VERSION_MINOR 1
+#define AMP_VERSION_MINOR 2
 #define AMP_VERSION_PATCH 0
 
 // This line is uncommented in pre-releases.
