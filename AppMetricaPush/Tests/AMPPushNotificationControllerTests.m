@@ -64,6 +64,9 @@ describe(@"AMPPushNotificationController", ^{
                                                                      deduplicationController:deduplicationController
                                                                           notificationCenter:notificationCenter];
     });
+    afterEach(^{
+        [AMPTokenEventModelProvider clearStubs];
+    });
 
     context(@"Device Token", ^{
 
@@ -94,12 +97,12 @@ describe(@"AMPPushNotificationController", ^{
     context(@"Notification", ^{
 
         it(@"Should not report nil info", ^{
-            [[eventsController shouldNot] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)];
+            [[eventsController shouldNot] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)];
             [notificationsController handlePushNotification:nil];
         });
 
         it(@"Should not report non-dictionary info", ^{
-            [[eventsController shouldNot] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)];
+            [[eventsController shouldNot] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)];
             id nonDictionary = @"string";
             [notificationsController handlePushNotification:nonDictionary];
         });
@@ -167,8 +170,9 @@ describe(@"AMPPushNotificationController", ^{
                 [[eventsController shouldNot] receive:@selector(reportPushNotificationWithNotificationID:
                                                                 actionType:
                                                                 actionID:
+                                                                uri:
                                                                 onFailure:)
-                                        withArguments:kw_any(), kAMPEventsControllerActionTypeRemoved, kw_any(), kw_any()];
+                                        withArguments:kw_any(), kAMPEventsControllerActionTypeRemoved, kw_any(), nil, kw_any()];
                 
                 [notificationsController handlePushNotification:@{}];
             });
@@ -191,8 +195,9 @@ describe(@"AMPPushNotificationController", ^{
                 [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:
                                                              actionType:
                                                              actionID:
+                                                             uri:
                                                              onFailure:)
-                                     withArguments:notificationID, kAMPEventsControllerActionTypeRemoved, kw_any(), kw_any()];
+                                     withArguments:notificationID, kAMPEventsControllerActionTypeRemoved, kw_any(), nil, kw_any()];
                 
                 [notificationsController handlePushNotification:@{}];
             });
@@ -203,8 +208,9 @@ describe(@"AMPPushNotificationController", ^{
                 [[eventsController shouldNot] receive:@selector(reportPushNotificationWithNotificationID:
                                                                 actionType:
                                                                 actionID:
+                                                                uri:
                                                                 onFailure:)
-                                        withArguments:kw_any(), kAMPEventsControllerActionTypeRemoved, kw_any(), kw_any()];
+                                        withArguments:kw_any(), kAMPEventsControllerActionTypeRemoved, kw_any(), nil, kw_any()];
                 
                 [notificationsController handlePushNotification:@{}];
             });
@@ -246,7 +252,7 @@ describe(@"AMPPushNotificationController", ^{
                 [payloadParser stub:@selector(pushNotificationPayloadFromDictionary:) andReturn:parsedPayload];
 
                 reportedEventParameters = [NSMutableArray array];
-                [eventsController stub:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
+                [eventsController stub:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
                              withBlock:^id(NSArray *params) {
                                  [reportedEventParameters addObject:[params copy]];
                                  return nil;
@@ -412,7 +418,7 @@ describe(@"AMPPushNotificationController", ^{
                     [payloadParser stub:@selector(pushNotificationPayloadFromDictionary:) andReturn:parsedPayload];
 
                     reportedEventParameters = [NSMutableArray array];
-                    [eventsController stub:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
+                    [eventsController stub:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
                                  withBlock:^id(NSArray *params) {
                                      [reportedEventParameters addObject:[params copy]];
                                      return nil;
@@ -548,14 +554,14 @@ describe(@"AMPPushNotificationController", ^{
                 });
 
                 it(@"Should report push received", ^{
-                    [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                         withArguments:notificationID, kAMPEventsControllerActionTypeReceive, nil, kw_any()];
+                    [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
+                                         withArguments:notificationID, kAMPEventsControllerActionTypeReceive, nil, nil, kw_any()];
                     [notificationsController handleDidReceiveNotificationRequestWithUserInfo:userInfo];
                 });
 
                 it(@"Should report push shown", ^{
-                    [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                         withArguments:notificationID, kAMPEventsControllerActionTypeShown, nil, kw_any()];
+                    [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
+                                         withArguments:notificationID, kAMPEventsControllerActionTypeShown, nil, nil, kw_any()];
                     [notificationsController handleDidReceiveNotificationRequestWithUserInfo:userInfo];
                 });
 
@@ -566,14 +572,14 @@ describe(@"AMPPushNotificationController", ^{
 
                 context(@"With ID", ^{
                     it(@"Should report push received", ^{
-                        [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                             withArguments:notificationID, kAMPEventsControllerActionTypeReceive, nil, kw_any()];
+                        [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
+                                             withArguments:notificationID, kAMPEventsControllerActionTypeReceive, nil, nil, kw_any()];
                         [notificationsController handleDidReceiveNotificationWithNotificationID:notificationID];
                     });
 
                     it(@"Should report push shown", ^{
-                        [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                             withArguments:notificationID, kAMPEventsControllerActionTypeShown, nil, kw_any()];
+                        [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
+                                             withArguments:notificationID, kAMPEventsControllerActionTypeShown, nil, nil, kw_any()];
                         [notificationsController handleDidReceiveNotificationWithNotificationID:notificationID];
                     });
 
@@ -685,14 +691,14 @@ describe(@"AMPPushNotificationController", ^{
         });
 
         it(@"Should report push received", ^{
-            [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                 withArguments:notificationID, kAMPEventsControllerActionTypeReceive, nil, kw_any()];
+            [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
+                                 withArguments:notificationID, kAMPEventsControllerActionTypeReceive, nil, nil, kw_any()];
             [notificationsController pendingPushController:pendingPushController didNotifyPendingPush:pendingPush];
         });
 
         it(@"Should report push shown", ^{
-            [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                 withArguments:notificationID, kAMPEventsControllerActionTypeShown, nil, kw_any()];
+            [[eventsController should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
+                                 withArguments:notificationID, kAMPEventsControllerActionTypeShown, nil, nil, kw_any()];
             [notificationsController pendingPushController:pendingPushController didNotifyPendingPush:pendingPush];
         });
     });

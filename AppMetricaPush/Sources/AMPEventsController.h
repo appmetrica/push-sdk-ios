@@ -29,6 +29,7 @@ extern NSString *const kAMPEventsControllerActionTypeRemoved;
 - (void)reportPushNotificationWithNotificationID:(NSString *)notificationID
                                       actionType:(NSString *)actionType
                                         actionID:(NSString *)actionID
+                                             uri:(NSString*)uri
                                        onFailure:(void (^)(NSError *error))onFailure;
 
 - (void)sendEventsBuffer;

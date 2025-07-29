@@ -39,6 +39,18 @@ NS_SWIFT_NAME(AppMetricaPushTracker)
  */
 + (void)reportOpen:(NSString *)notificationID onFailure:(nullable AMPAppMetricaPushTrackerReportFailure)onFailure;
 
+/** Reporting push notification open by user event.
+ Should be called after AppMetrica initialization.
+ See internal documentation for more information about identifiers and integration.
+
+ @param notificationID Notification identifier.
+ @param uri uri that received in payload
+ @param onFailure Block to be executed if an error occurres while reporting, the error is passed as block argument.
+ */
++ (void)reportOpen:(NSString *)notificationID
+               uri:(nullable NSString *)uri
+         onFailure:(nullable AMPAppMetricaPushTrackerReportFailure)onFailure;
+
 /** Reporting processing silent push notification.
  Should be called after AppMetrica initialization.
  See internal documentation for more information about identifiers and integration.

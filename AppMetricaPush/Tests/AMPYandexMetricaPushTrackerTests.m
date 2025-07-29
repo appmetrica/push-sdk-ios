@@ -10,6 +10,7 @@ SPEC_BEGIN(AMPAppMetricaPushTrackerTests)
 describe(@"AMPAppMetricaPushTracker", ^{
 
     NSString *const notificationID = @"NOTIFICATION_ID";
+    NSString *const uri = @"https://appmetrica.io/push";
 
     AMPEventsController *__block controller = nil;
     AMPPushNotificationController *__block pushController = nil;
@@ -20,102 +21,55 @@ describe(@"AMPAppMetricaPushTracker", ^{
         pushController = [AMPPushNotificationController nullMock];
         [AMPPushNotificationController stub:@selector(sharedInstance) andReturn:pushController];
     });
+    afterEach(^{
+        [AMPEventsController clearStubs];
+        [AMPPushNotificationController clearStubs];
+    });
 
     context(@"Receive", ^{
-
-        it(@"Should call events controller with proper notification id", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:0];
-            [AMPAppMetricaPushTracker reportReceive:notificationID onFailure:nil];
-            [[spy.argument should] equal:notificationID];
-        });
-
-        it(@"Should call events controller with proper action type", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:1];
-            [AMPAppMetricaPushTracker reportReceive:notificationID onFailure:nil];
-            [[spy.argument should] equal:@"receive"];
-        });
-
-        it(@"Should call events controller with nil action id", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:2];
-            [AMPAppMetricaPushTracker reportReceive:notificationID onFailure:nil];
-            [[spy.argument should] beNil];
-        });
-
-        it(@"Should call events controller with same onFailure block", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:3];
+        
+        it(@"reportReceive", ^{
             AMPAppMetricaPushTrackerReportFailure block = ^(NSError *error){};
+            
+            [[controller should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
+                           withArguments:notificationID, @"receive", nil, nil, block];
+            
             [AMPAppMetricaPushTracker reportReceive:notificationID onFailure:block];
-            [[spy.argument should] equal:block];
         });
         
     });
 
     context(@"Open", ^{
 
-        it(@"Should call events controller with proper notification id", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:0];
-            [AMPAppMetricaPushTracker reportOpen:notificationID onFailure:nil];
-            [[spy.argument should] equal:notificationID];
-        });
-
-        it(@"Should call events controller with proper action type", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:1];
-            [AMPAppMetricaPushTracker reportOpen:notificationID onFailure:nil];
-            [[spy.argument should] equal:@"open"];
-        });
-
-        it(@"Should call events controller with nil action id", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:2];
-            [AMPAppMetricaPushTracker reportOpen:notificationID onFailure:nil];
-            [[spy.argument should] beNil];
-        });
-
-        it(@"Should call events controller with same onFailure block", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:3];
+        it(@"reportOpen", ^{
             AMPAppMetricaPushTrackerReportFailure block = ^(NSError *error){};
+            
+            [[controller should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
+                           withArguments:notificationID, @"open", nil, nil, block];
+            
             [AMPAppMetricaPushTracker reportOpen:notificationID onFailure:block];
-            [[spy.argument should] equal:block];
+        });
+        
+        it(@"reportOpen and uri", ^{
+            AMPAppMetricaPushTrackerReportFailure block = ^(NSError *error){};
+            
+            [[controller should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
+                           withArguments:notificationID, @"open", nil, uri, block];
+            
+            [AMPAppMetricaPushTracker reportOpen:notificationID uri:uri onFailure:block];
         });
 
     });
 
     context(@"Dismiss", ^{
 
-        it(@"Should call events controller with proper notification id", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:0];
-            [AMPAppMetricaPushTracker reportDismiss:notificationID onFailure:nil];
-            [[spy.argument should] equal:notificationID];
-        });
-
-        it(@"Should call events controller with proper action type", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:1];
-            [AMPAppMetricaPushTracker reportDismiss:notificationID onFailure:nil];
-            [[spy.argument should] equal:@"dismiss"];
-        });
-
-        it(@"Should call events controller with nil action id", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:2];
-            [AMPAppMetricaPushTracker reportDismiss:notificationID onFailure:nil];
-            [[spy.argument should] beNil];
-        });
-
-        it(@"Should call events controller with same onFailure block", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:3];
+        it(@"reportDismiss", ^{
             AMPAppMetricaPushTrackerReportFailure block = ^(NSError *error){};
+            
+            [[controller should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
+                           withArguments:notificationID, @"dismiss", nil, nil, block];
+            
             [AMPAppMetricaPushTracker reportDismiss:notificationID onFailure:block];
-            [[spy.argument should] equal:block];
         });
         
     });
@@ -123,80 +77,41 @@ describe(@"AMPAppMetricaPushTracker", ^{
     context(@"Custom", ^{
 
         NSString *const actionID = @"ACTION_ID";
-
-        it(@"Should call events controller with proper notification id", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:0];
-            [AMPAppMetricaPushTracker reportAdditionalAction:actionID notificationID:notificationID onFailure:nil];
-            [[spy.argument should] equal:notificationID];
-        });
-
-        it(@"Should call events controller with proper action type", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:1];
-            [AMPAppMetricaPushTracker reportAdditionalAction:actionID notificationID:notificationID onFailure:nil];
-            [[spy.argument should] equal:@"custom"];
-        });
-
-        it(@"Should call events controller with nil action id", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:2];
-            [AMPAppMetricaPushTracker reportAdditionalAction:actionID notificationID:notificationID onFailure:nil];
-            [[spy.argument should] equal:actionID];
-        });
-
-        it(@"Should call events controller with same onFailure block", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:3];
+        
+        it(@"reportAdditionalAction", ^{
             AMPAppMetricaPushTrackerReportFailure block = ^(NSError *error){};
+            
+            [[controller should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
+                           withArguments:notificationID, @"custom", actionID, nil, block];
+            
             [AMPAppMetricaPushTracker reportAdditionalAction:actionID notificationID:notificationID onFailure:block];
-            [[spy.argument should] equal:block];
+        });
+
+    });
+
+    context(@"Processed", ^{
+        
+        it(@"reportProcess", ^{
+            AMPAppMetricaPushTrackerReportFailure block = ^(NSError *error){};
+            
+            [[controller should] receive:@selector(reportPushNotificationWithNotificationID:actionType:actionID:uri:onFailure:)
+                           withArguments:notificationID, @"processed", nil, nil, block];
+            
+            [AMPAppMetricaPushTracker reportProcess:notificationID onFailure:block];
         });
         
     });
 
-    context(@"Processed", ^{
-
-        it(@"Should call events controller with proper notification id", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:0];
-            [AMPAppMetricaPushTracker reportProcess:notificationID onFailure:nil];
-            [[spy.argument should] equal:notificationID];
-        });
-
-        it(@"Should call events controller with proper action type", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:1];
-            [AMPAppMetricaPushTracker reportProcess:notificationID onFailure:nil];
-            [[spy.argument should] equal:@"processed"];
-        });
-
-        it(@"Should call events controller with nil action id", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:2];
-            [AMPAppMetricaPushTracker reportProcess:notificationID onFailure:nil];
-            [[spy.argument should] beNil];
-        });
-
-        it(@"Should call events controller with same onFailure block", ^{
-            KWCaptureSpy *spy = [controller captureArgument:@selector(reportPushNotificationWithNotificationID:actionType:actionID:onFailure:)
-                                                    atIndex:3];
-            AMPAppMetricaPushTrackerReportFailure block = ^(NSError *error){};
-            [AMPAppMetricaPushTracker reportProcess:notificationID onFailure:block];
-            [[spy.argument should] equal:block];
-        });
-
-    });
-
     context(@"Received in extension", ^{
-
-        it(@"Should call pending controller with proper notification id", ^{
-            KWCaptureSpy *spy =
-                [pushController captureArgument:@selector(handleDidReceiveNotificationWithNotificationID:) atIndex:0];
-            [AMPAppMetricaPushTracker reportReceiveInExtension:notificationID onFailure:nil];
-            [[spy.argument should] equal:notificationID];
+        
+        it(@"reportReceiveInExtension", ^{
+            AMPAppMetricaPushTrackerReportFailure block = ^(NSError *error){};
+            
+            [[pushController should] receive:@selector(handleDidReceiveNotificationWithNotificationID:)
+                               withArguments:notificationID];
+            [AMPAppMetricaPushTracker reportReceiveInExtension:notificationID onFailure:block];
         });
-
+        
     });
     
 });

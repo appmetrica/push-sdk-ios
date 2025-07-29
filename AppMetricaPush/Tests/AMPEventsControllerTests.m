@@ -59,6 +59,7 @@ describe(@"AMPEventsController", ^{
                 [controller reportPushNotificationWithNotificationID:@"ID"
                                                           actionType:@"open"
                                                             actionID:nil
+                                                                 uri:nil
                                                            onFailure:nil];
                 reporter.lastOnFailureBlock(reporter.notActivatedError);
             }) shouldNot] raise];
@@ -121,13 +122,21 @@ describe(@"AMPEventsController", ^{
 
             it(@"Should not report notification", ^{
                 [[reporter shouldNot] receive:@selector(reportPushNotification:environment:onFailure:)];
-                [controller reportPushNotificationWithNotificationID:@"" actionType:@"open" actionID:nil onFailure:nil];
+                [controller reportPushNotificationWithNotificationID:@""
+                                                          actionType:@"open"
+                                                            actionID:nil
+                                                                 uri:nil
+                                                           onFailure:nil];
             });
 
             it(@"Should track reporting fact", ^{
                 [[libraryTracker should] receive:@selector(reportInvalidNotification:withReason:)
                                    withArguments:nil, @"no_notification_id"];
-                [controller reportPushNotificationWithNotificationID:@"" actionType:@"open" actionID:nil onFailure:nil];
+                [controller reportPushNotificationWithNotificationID:@""
+                                                          actionType:@"open"
+                                                            actionID:nil
+                                                                 uri:nil
+                                                           onFailure:nil];
             });
 
         });
@@ -137,11 +146,13 @@ describe(@"AMPEventsController", ^{
             NSString *notificationID = @"NOTIFICATION_ID";
             NSString *actionType = @"TYPE";
             NSString *actionID = @"ACTION_ID";
+            NSString *uri = @"https://appmetrica.io/push";
 
             beforeEach(^{
                 [controller reportPushNotificationWithNotificationID:notificationID
                                                           actionType:actionType
                                                             actionID:actionID
+                                                                 uri:uri
                                                            onFailure:nil];
             });
 
@@ -155,6 +166,10 @@ describe(@"AMPEventsController", ^{
 
             it(@"Should format dictionary with correct action ID", ^{
                 [[reporter.lastReportedNotification[@"action"][@"id"] should] equal:actionID];
+            });
+            
+            it(@"Should report notification with uri", ^{
+                [[reporter.lastReportedNotification[@"action"][@"uri"] should] equal:uri];
             });
 
             it(@"Should report notification with actual environment", ^{
@@ -170,19 +185,31 @@ describe(@"AMPEventsController", ^{
             it(@"Should track metrica not activated error", ^{
                 [[libraryTracker should] receive:@selector(reportMetricaNotActivatedForAction:)
                                    withArguments:@"report_push_notification"];
-                [controller reportPushNotificationWithNotificationID:@"ID" actionType:@"open" actionID:nil onFailure:nil];
+                [controller reportPushNotificationWithNotificationID:@"ID"
+                                                          actionType:@"open"
+                                                            actionID:nil
+                                                                 uri:nil
+                                                           onFailure:nil];
                 reporter.lastOnFailureBlock(reporter.notActivatedError);
             });
 
             it(@"Should track reporting error", ^{
                 [[libraryTracker should] receive:@selector(reportMetricaSendingEventError:) withArguments:reportingError];
-                [controller reportPushNotificationWithNotificationID:@"ID" actionType:@"open" actionID:nil onFailure:nil];
+                [controller reportPushNotificationWithNotificationID:@"ID"
+                                                          actionType:@"open"
+                                                            actionID:nil
+                                                                 uri:nil
+                                                           onFailure:nil];
                 reporter.lastOnFailureBlock(reportingError);
             });
 
             it(@"Should call onFailure with reporting error", ^{
                 NSError *__block resultError = nil;
-                [controller reportPushNotificationWithNotificationID:@"ID" actionType:@"open" actionID:nil onFailure:^(NSError *error) {
+                [controller reportPushNotificationWithNotificationID:@"ID"
+                                                          actionType:@"open"
+                                                            actionID:nil
+                                                                 uri:nil
+                                                           onFailure:^(NSError *error) {
                     resultError = error;
                 }];
                 reporter.lastOnFailureBlock(reportingError);

@@ -21,6 +21,7 @@ static NSString *const kAMPNotificationIDKey = @"notification_id";
 static NSString *const kAMPNotificationActionKey = @"action";
 static NSString *const kAMPNotificationActionTypeKey = @"type";
 static NSString *const kAMPNotificationActionIDKey = @"id";
+static NSString *const kAMPNotificationActionUri = @"uri";
 
 @interface AMPEventsController ()
 
@@ -78,6 +79,7 @@ static NSString *const kAMPNotificationActionIDKey = @"id";
 - (void)reportPushNotificationWithNotificationID:(NSString *)notificationID
                                       actionType:(NSString *)actionType
                                         actionID:(NSString *)actionID
+                                             uri:(NSString*)uri
                                        onFailure:(void (^)(NSError *error))onFailure
 {
     if (notificationID.length == 0) {
@@ -91,6 +93,9 @@ static NSString *const kAMPNotificationActionIDKey = @"id";
     NSMutableDictionary *action = [NSMutableDictionary dictionary];
     action[kAMPNotificationActionTypeKey] = actionType;
     action[kAMPNotificationActionIDKey] = actionID;
+    if ([uri length] > 0) {
+        action[kAMPNotificationActionUri] = uri;
+    }
     eventValue[kAMPNotificationActionKey] = [action copy];
 
     NSDictionary *environment = [self.environmentProvider notificationEventEnvironment];

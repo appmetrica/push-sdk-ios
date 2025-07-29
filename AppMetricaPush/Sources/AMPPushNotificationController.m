@@ -159,6 +159,7 @@
 - (void)handlePushNotification:(NSDictionary *)notification applicationState:(AMPApplicationState)applicationState
 {
     AMPPushNotificationPayload *payload = [self parsedPayloadForUserInfo:notification];
+    NSString *targetURL = payload.targetURL;
     @synchronized (self.deduplicationController) {
         if ([self.deduplicationController shouldReportEventForNotification:payload] == NO) {
             return;
@@ -178,7 +179,7 @@
         [self removeNotificationsIfNeeded:payload];
     }
     if ([self.payloadValidator isPayloadValidForURLOpening:payload]) {
-        [self openPushNotificationTargetURL:payload.targetURL applicationState:applicationState];
+        [self openPushNotificationTargetURL:targetURL applicationState:applicationState];
     }
 }
 
@@ -215,16 +216,21 @@
                               actionType:(NSString *)actionType
                                 actionID:(NSString *)actionID
 {
-    [self trackPushNotificationWithNotificationID:payload.notificationID actionType:actionType actionID:actionID];
+    [self trackPushNotificationWithNotificationID:payload.notificationID
+                                       actionType:actionType
+                                         actionID:actionID
+                                              uri:nil];
 }
 
 - (void)trackPushNotificationWithNotificationID:(NSString *)notificationID
                                      actionType:(NSString *)actionType
                                        actionID:(NSString *)actionID
+                                            uri:(NSString *)uri
 {
     [self.eventsController reportPushNotificationWithNotificationID:notificationID
                                                          actionType:actionType
                                                            actionID:actionID
+                                                                uri:uri
                                                           onFailure:nil];
 }
 
@@ -232,17 +238,20 @@
 {
     [self trackPushNotificationWithNotificationID:payload.notificationID
                                        actionType:kAMPEventsControllerActionTypeShown
-                                         actionID:nil];
+                                         actionID:nil
+                                              uri:nil];
 }
 
 - (void)trackPushNotificationReceivedWithNotificationID:(NSString *)notificationID
 {
     [self trackPushNotificationWithNotificationID:notificationID
                                        actionType:kAMPEventsControllerActionTypeReceive
-                                         actionID:nil];
+                                         actionID:nil
+                                              uri:nil];
     [self trackPushNotificationWithNotificationID:notificationID
                                        actionType:kAMPEventsControllerActionTypeShown
-                                         actionID:nil];
+                                         actionID:nil
+                                              uri:nil];
 }
 
 - (void)openPushNotificationTargetURL:(NSString *)targetURL
@@ -308,7 +317,9 @@
 {
     AMPPushNotificationPayload *delivered = [self parsedPayloadForUserInfo:notification.request.content.userInfo];
     if (delivered.notificationID != nil) {
-        [self trackPushNotificationWithPayload:delivered actionType:kAMPEventsControllerActionTypeRemoved actionID:nil];
+        [self trackPushNotificationWithPayload:delivered
+                                    actionType:kAMPEventsControllerActionTypeRemoved
+                                      actionID:nil];
     }
 }
 
