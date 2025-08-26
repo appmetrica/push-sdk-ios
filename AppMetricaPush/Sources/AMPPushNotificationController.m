@@ -159,7 +159,6 @@
 - (void)handlePushNotification:(NSDictionary *)notification applicationState:(AMPApplicationState)applicationState
 {
     AMPPushNotificationPayload *payload = [self parsedPayloadForUserInfo:notification];
-    NSString *targetURL = payload.targetURL;
     @synchronized (self.deduplicationController) {
         if ([self.deduplicationController shouldReportEventForNotification:payload] == NO) {
             return;
@@ -167,19 +166,21 @@
         [self.deduplicationController markEventReportedForNotification:payload];
     }
     if ([self.payloadValidator isPayloadValidForTracking:payload]) {
-        NSString *actionType = nil;
         if (payload.silent) {
-            actionType = kAMPEventsControllerActionTypeProcessed;
+            [self trackPushNotificationWithPayload:payload actionType:kAMPEventsControllerActionTypeProcessed actionID:nil];
         }
         else {
-            actionType = kAMPEventsControllerActionTypeOpen;
             [self trackPushNotificationShownWithPayload:payload];
+            [self trackPushNotificationWithNotificationID:payload.notificationID
+                                               actionType:kAMPEventsControllerActionTypeOpen
+                                                 actionID:nil
+                                                      uri:payload.targetURL];
         }
-        [self trackPushNotificationWithPayload:payload actionType:actionType actionID:nil];
+        
         [self removeNotificationsIfNeeded:payload];
     }
     if ([self.payloadValidator isPayloadValidForURLOpening:payload]) {
-        [self openPushNotificationTargetURL:targetURL applicationState:applicationState];
+        [self openPushNotificationTargetURL:payload.targetURL applicationState:applicationState];
     }
 }
 

@@ -355,6 +355,13 @@ describe(@"AMPPushNotificationController", ^{
                     [notificationsController handlePushNotification:@{}];
                     [[reportedEventParameters[1][2] should] equal:[NSNull null]];
                 });
+                
+                it(@"Should report uri", ^{
+                    NSString *uri = @"https://appmetrica.io";
+                    [parsedPayload stub:@selector(targetURL) andReturn:uri];
+                    [notificationsController handlePushNotification:@{}];
+                    [[reportedEventParameters[1][3] should] equal:uri];
+                });
             });
         });
 
