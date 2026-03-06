@@ -20,9 +20,9 @@ Pod::Spec.new do |s|
   
   s.resource_bundles = { s.name => "#{s.name}/Sources/Resources/PrivacyInfo.xcprivacy" }
 
-  s.dependency 'AppMetricaCore', '~> 5.9'
-  s.dependency 'AppMetricaCoreExtension', '~> 5.9'
-  s.dependency 'AppMetricaCoreUtils', '~> 5.9'
+  s.dependency 'AppMetricaCore', '~> 6.0'
+  s.dependency 'AppMetricaCoreExtension', '~> 6.0'
+  s.dependency 'AppMetricaCoreUtils', '~> 6.0'
 
   s.frameworks = 'UIKit', 'Foundation', 'UserNotifications'
 end
