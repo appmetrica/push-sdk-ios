@@ -58,7 +58,7 @@ static NSString *const kAMPReporterAPIKey = @"0e5e9c33-f8c3-4568-86c5-2e4f57523f
         @"error_userinfo" : (error.userInfo ?: @{})
     };
 
-    [self reportEventWithName:@"Push reported before metrica activation"
+    [self reportEventWithName:@"Push reporting error"
                    parameters:parameters];
 }
 
