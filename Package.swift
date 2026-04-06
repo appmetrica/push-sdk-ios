@@ -40,16 +40,19 @@ enum ExternalDependency: String, CaseIterable {
 
     static var allDependecies: [Package.Dependency] { allCases.map { $0.package } }
 
-    var dependency: Target.Dependency {
+    var dependency: [Target.Dependency] {
         switch self {
-        case .appMetrica: return .product(name: "AppMetricaCore", package: name)
-        case .kiwi: return .byName(name: name)
+        case .appMetrica: return [
+            .product(name: "AppMetricaCore", package: name),
+            .product(name: "AppMetricaLibraryAdapter", package: name),
+        ]
+        case .kiwi: return [.byName(name: name)]
         }
     }
 
     var package: Package.Dependency {
         switch self {
-        case .appMetrica: return package(url: "https://github.com/appmetrica/appmetrica-sdk-ios", "6.0.0"..<"7.0.0")
+        case .appMetrica: return package(url: "https://github.com/appmetrica/appmetrica-sdk-ios", "6.2.0"..<"7.0.0")
         case .kiwi: return package(url: "https://github.com/appmetrica/Kiwi", exact: "3.0.1-spm")
         }
     }
@@ -190,7 +193,7 @@ extension Target {
 
         return .target(
             name: target.name,
-            dependencies: dependencies.map { $0.dependency } + externalDependencies.map { $0.dependency },
+            dependencies: dependencies.map { $0.dependency } + externalDependencies.flatMap { $0.dependency },
             path: target.path,
             resources: resources,
             cSettings: resultSearchPath.sorted().map { .headerSearchPath($0) }
@@ -207,7 +210,7 @@ extension Target {
 
         return .testTarget(
             name: target.testsName,
-            dependencies: dependencies.map { $0.dependency } + externalDependencies.map { $0.dependency },
+            dependencies: dependencies.map { $0.dependency } + externalDependencies.flatMap { $0.dependency },
             path: target.testsPath,
             resources: resources,
             cSettings: resultSearchPath.sorted().map { .headerSearchPath($0) }
