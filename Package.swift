@@ -140,7 +140,7 @@ extension PushTarget {
 let package = Package(
     name: "AppMetricaPush",
     platforms: [
-        .iOS(.v13),
+        .iOS(.v15),
     ],
     products: PushProduct.allProducts,
     dependencies: ExternalDependency.allDependecies,
