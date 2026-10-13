@@ -104,8 +104,8 @@ static NSString *const kAMPEventNameNotification = @"push_notification";
         return NO;
     }
 
-    BOOL codeEquals = error.code == AMAAppMetricaEventErrorCodeInitializationError;
-    return codeEquals && [error.domain isEqualToString:kAMAAppMetricaErrorDomain];
+    BOOL codeEquals = error.code == AMAAppMetricaEventErrorCodeIsNotActivated;
+    return codeEquals && [error.domain isEqualToString:AMAAppMetricaEventErrorDomain];
 }
 
 @end

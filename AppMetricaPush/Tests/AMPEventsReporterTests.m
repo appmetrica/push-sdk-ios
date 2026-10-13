@@ -114,14 +114,14 @@ describe(@"AMPEventsReporter", ^{
 
         it(@"Should not determine error with different domain", ^{
             NSError *error = [NSError errorWithDomain:@"com.other.domain"
-                                                 code:AMAAppMetricaEventErrorCodeInitializationError
+                                                 code:AMAAppMetricaEventErrorCodeIsNotActivated
                                              userInfo:nil];
             BOOL result = [reporter isReporterNotActivatedError:error];
             [[theValue(result) should] beNo];
         });
 
         it(@"Should not determine error with different code", ^{
-            NSError *error = [NSError errorWithDomain:kAMAAppMetricaErrorDomain
+            NSError *error = [NSError errorWithDomain:AMAAppMetricaEventErrorDomain
                                                  code:-1
                                              userInfo:nil];
             BOOL result = [reporter isReporterNotActivatedError:error];
@@ -130,8 +130,8 @@ describe(@"AMPEventsReporter", ^{
 
         it(@"Should determine metrica not activated error", ^{
             
-            NSError *error = [NSError errorWithDomain:kAMAAppMetricaErrorDomain
-                                                 code:AMAAppMetricaEventErrorCodeInitializationError
+            NSError *error = [NSError errorWithDomain:AMAAppMetricaEventErrorDomain
+                                                 code:AMAAppMetricaEventErrorCodeIsNotActivated
                                              userInfo:nil];
             BOOL result = [reporter isReporterNotActivatedError:error];
             [[theValue(result) should] beYes];
